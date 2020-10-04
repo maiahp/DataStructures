@@ -19,7 +19,6 @@ a.out
 *.swp
 *.swo
 *~
-.DS_Store
 *.xcodeproj
 
 
@@ -32,3 +31,4 @@ a.out
 *.img
 *.iso
 *.dll
+.DS_Store
