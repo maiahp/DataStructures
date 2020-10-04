@@ -19,6 +19,8 @@ a.out
 *.swp
 *.swo
 *~
+*.DS_Store
+*.xcodeproj
 
 
 # Other
