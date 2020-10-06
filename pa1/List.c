@@ -326,9 +326,10 @@ void insertBefore(List L, int data) {
         exit(EXIT_FAILURE);
     }
     if (length(L) > 0 && index(L) >= 0) { // pre condition: L is not empty and cursor is defined
+        
         if (index(L) == 0) { // cursor is at front of list
             prepend(L, data); // new node will be the front of the list
-        } else { // cursor is at some place in list
+        } else { // cursor is at some other place in list
             Node nodeToInsert = newNode(data);
             // insert before the cursor
             L->cursor->prev->next = nodeToInsert;
@@ -338,6 +339,9 @@ void insertBefore(List L, int data) {
             
             // index is updated +1
             L->index++;
+            
+            // update length
+            L->length++;
         }
     } else { // the cursor is undefined
         printf("List Error: calling insertBefore() when cursor is undefined\n");
@@ -353,10 +357,22 @@ void insertAfter(List L, int data) {
         printf("List Error: calling insertAfter() on NULL List reference.\n");
         exit(EXIT_FAILURE);
     }
-    if () {
+    if (length(L) > 0 && index(L) >= 0) { // pre condition: L is not empty and cursor is defined
         
-        
-        
+        if (index(L) == length(L)-1) { // if cursor is at the back of the list
+            append(L, data); // add to the back
+        } else { // cursor is at some other place in list
+            Node nodeToInsert = newNode(data);
+            // insert after the cursor
+            L->cursor->next->prev = nodeToInsert;
+            nodeToInsert->next = L->cursor->next;
+            nodeToInsert->prev = L->cursor;
+            L->cursor->next = nodeToInsert;
+
+            // inserting after the cursor, we don't update index of cursor
+            L->length++; // update length 
+        }
+
     } else { // the cursor is undefined or list is empty
         printf("List Error: calling insertAfter() when cursor is undefined or list is empty.\n");
         exit(EXIT_FAILURE);
