@@ -442,7 +442,32 @@ void delete(List L) {
     }
     
     if (length(L) > 0 && index(L) >= 0) { // pre condition, L is not empty and cursor defined
+        Node nodeToDelete = L->cursor;
         
+        if (nodeToDelete == L->front) { // node to delete is the front of L
+            Node newFront = L->front->next;
+            newFront->prev = NULL;
+            L->front = newFront;
+            
+        } else if (nodeToDelete == L->back) { // node to delete is the back of L
+            Node newBack = L->back->prev;
+            newBack->next = NULL;
+            L->back = newBack;
+            
+        } else { // node to delete is somewhere in the middle of L
+            nodeToDelete->prev->next = nodeToDelete->next;
+            nodeToDelete->next->prev = nodeToDelete->prev;
+        }
+        
+        // make cursor undefined
+        L->cursor = NULL;
+        L->index = -1;
+        
+        // update length
+        L->length--;
+        
+        // delete node
+        freeNode(&nodeToDelete);
     }
     
 }
