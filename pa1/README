@@ -9,13 +9,13 @@ Included files:
 
 
 
-Lex.c  -  written by me. Alphabetically sorts an input file and uses the List ADT to 	store information.
+Lex.c  -  written by me. Alphabetically sorts an input file and uses the List ADT to store information.
 
 
-List.c  -  written by me. The List ADT is a bi-directional queue that includes a 	cursor for iteration.
+List.c  -  written by me. The List ADT is a bi-directional queue that includes a cursor for iteration.
 
 
-List.h  -  provided by the Professor. A header file for the List ADT which contains 	the exported List operations.
+List.h  -  provided by the Professor. A header file for the List ADT which contains the exported List operations.
 
 
 ListClient.c  -  provided by the Professor. A test file for the List ADT.
