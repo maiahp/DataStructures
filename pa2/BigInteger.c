@@ -21,7 +21,7 @@
 
 // private BigInteger type
 typedef struct BigIntegerObj{
-    int sign; // 1, -1, or 0
+    int sign; // 1, -1, 0  (sign 0 means the number is 0)
     List magnitude;
 } BigIntegerObj;
 
@@ -70,17 +70,121 @@ int compare(BigInteger A, BigInteger B) {
         exit(EXIT_FAILURE);
     }
     
+    int returnVal = 0;
     
-    return 0;
+    if (equals(A, B) == 1) { // catches the case if A and B are both 0
+        returnVal = 0;
+        
+    } else { // A is not equal to B
+        
+        // case: If the sign of either A or B is zero
+        // both signs cannot be 0, if they were, A = B, which would have been caught above
+        if (sign(A) == 0 || sign(B) == 0) {
+            if (sign(A) == 0) {
+                if (sign(B) == 1) {
+                    // A < B
+                    returnVal = -1;
+                } else { // sign(B) is -1
+                    // A > B
+                    returnVal = 1;
+                }
+            } else if (sign(B) == 0) {
+                if (sign(A) == 1) {
+                    // A > B
+                    returnVal = 1;
+                } else { // sign(A) is -1
+                    // A < B
+                    returnVal = -1;
+                }
+            }
+        } else { // case: neither sign is 0
+            if (sign(A) != sign(B)) { // signs are not the same
+                if (sign(A) == 1) { // A is 1 so B is -1
+                    // A > B
+                    returnVal = 1;
+                } else { // sign(A) is -1
+                    // A < B
+                    returnVal = -1;
+                }
+            } else { // case: A and B have the same sign
+                
+                // case: If A and B are both positive, the larger magnitude is larger
+                if (sign(A) == 1) { // both signs are +1
+                    
+                    // check lengths - larger length is the larger num
+                    if (length(A->magnitude) > length(B->magnitude)) {
+                        // A > B
+                        returnVal = 1;
+                    } else if (length(A->magnitude) < length(B->magnitude)) {
+                        // A < B
+                        returnVal = -1;
+                    } else {
+                        // lengths are the same - check each element
+                        
+                        // traverse the lists from MSD (left side) to LSD (right side)
+                        // the first digit to be larger is the larger number
+                        moveFront(A->magnitude);
+                        moveFront(B->magnitude);
+                        
+                        while (index(A->magnitude) >= 0) {
+                            if (get(A->magnitude) > get(B->magnitude)) {
+                                // A > B
+                                returnVal = 1;
+                            } else if (get(A->magnitude) < get(B->magnitude)) {
+                                // A < B
+                                returnVal = -1;
+                            } else {
+                                // the digits are equal, move to next element
+                                moveNext(A->magnitude);
+                                moveNext(B->magnitude);
+                            }
+                        }
+                    }
+                } else {  // case: If A and B are both negative, the smaller magnitude is larger
+                    
+                    // check lengths - smaller length is the larger num
+                    if (length(A->magnitude) > length(B->magnitude)) {
+                        // A < B
+                        returnVal = -1;
+                    } else if (length(A->magnitude) < length(B->magnitude)) {
+                        // A > B
+                        returnVal = 1;
+                    } else {
+                        // lengths are the same - check each element
+                        moveFront(A->magnitude);
+                        moveFront(B->magnitude);
+                        
+                        // traverse the lists from MSD (left side) to LSD (right side)
+                        // the first digit to be larger is the larger number
+                        while (index(A->magnitude) >= 0) {
+                            if (get(A->magnitude) > get(B->magnitude)) {
+                                // A < B
+                                returnVal = -1;
+                            } else if (get(A->magnitude) < get(B->magnitude)) {
+                                // A > B
+                                returnVal = 1;
+                            } else {
+                                // the digits are equal, move to next element
+                                moveNext(A->magnitude);
+                                moveNext(B->magnitude);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return returnVal;
 }
 
-// equals()
+// equals()sx
 // Return true (1) if A and B are equal, false (0) otherwise.
 int equals(BigInteger A, BigInteger B) {
     if (A == NULL || B == NULL) {
         fprintf(stderr, "BigInteger Error: calling equals() on one or both NULL BigInteger references\n");
         exit(EXIT_FAILURE);
     }
+    // note: the case where a sign is 0 will still work
     
     int isEqual = 1;
     

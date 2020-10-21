@@ -19,7 +19,7 @@ typedef struct BigIntegerObj* BigInteger;
 // Constructors-Destructors ---------------------------------------------------
 // newBigInteger()
 // Returns a reference to a new BigInteger object in the zero state.
-BigInteger newBigInteger();
+BigInteger newBigInteger(void);
 
 // freeBigInteger()
 // Frees heap memory associated with *pN, sets *pN to NULL.
