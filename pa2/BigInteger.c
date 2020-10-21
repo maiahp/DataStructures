@@ -14,7 +14,8 @@
 #define BASE (long)(pow(10,POWER) + 0.01)
 
 // prototypes --------------------------------------------------------------------------
-
+void normalize(BigInteger);
+void deleteLeadingZeros(BigInteger);
 
 
 // structs -----------------------------------------------------------------------------
@@ -22,7 +23,8 @@
 // private BigInteger type
 typedef struct BigIntegerObj{
     int sign; // 1, -1, 0  (sign 0 means the number is 0)
-    List magnitude;
+    List magnitude; // front of list is LSD ---- back of list is MSD
+                    // the true value of each list element = data * 10^n (n = its index in the list)
 } BigIntegerObj;
 
 
@@ -121,10 +123,10 @@ int compare(BigInteger A, BigInteger B) {
                     } else {
                         // lengths are the same - check each element
                         
-                        // traverse the lists from MSD (left side) to LSD (right side)
+                        // traverse the lists from MSD (back) to LSD (front)
                         // the first digit to be larger is the larger number
-                        moveFront(A->magnitude);
-                        moveFront(B->magnitude);
+                        moveBack(A->magnitude);
+                        moveBack(B->magnitude);
                         
                         while (index(A->magnitude) >= 0) {
                             if (get(A->magnitude) > get(B->magnitude)) {
@@ -135,8 +137,8 @@ int compare(BigInteger A, BigInteger B) {
                                 returnVal = -1;
                             } else {
                                 // the digits are equal, move to next element
-                                moveNext(A->magnitude);
-                                moveNext(B->magnitude);
+                                movePrev(A->magnitude);
+                                movePrev(B->magnitude);
                             }
                         }
                     }
@@ -151,10 +153,10 @@ int compare(BigInteger A, BigInteger B) {
                         returnVal = 1;
                     } else {
                         // lengths are the same - check each element
-                        moveFront(A->magnitude);
-                        moveFront(B->magnitude);
+                        moveBack(A->magnitude);
+                        moveBack(B->magnitude);
                         
-                        // traverse the lists from MSD (left side) to LSD (right side)
+                        // traverse the lists from MSD (back) to LSD (front)
                         // the first digit to be larger is the larger number
                         while (index(A->magnitude) >= 0) {
                             if (get(A->magnitude) > get(B->magnitude)) {
@@ -165,8 +167,8 @@ int compare(BigInteger A, BigInteger B) {
                                 returnVal = 1;
                             } else {
                                 // the digits are equal, move to next element
-                                moveNext(A->magnitude);
-                                moveNext(B->magnitude);
+                                movePrev(A->magnitude);
+                                movePrev(B->magnitude);
                             }
                         }
                     }
@@ -191,8 +193,8 @@ int equals(BigInteger A, BigInteger B) {
     if (A->sign == B->sign) { // signs are equal
         if (length(A->magnitude) == length(B->magnitude)) { // lengths are equal
             // check to see if all elements match up (are equal)
-            moveFront(A->magnitude);
-            moveFront(B->magnitude);
+            moveBack(A->magnitude);
+            moveBack(B->magnitude);
             while(index(A->magnitude) >= 0) {
                 // A and B magnitudes are the same length
                 // so if A finished traversing, B has also finished
@@ -200,8 +202,8 @@ int equals(BigInteger A, BigInteger B) {
                     isEqual = 0;
                     break;
                 }
-                moveNext(A->magnitude);
-                moveNext(B->magnitude);
+                movePrev(A->magnitude);
+                movePrev(B->magnitude);
             }
         } else { // lengths of magnitudes are not equal
             isEqual = 0;
@@ -246,7 +248,41 @@ void negate(BigInteger N) {
 // represented in base 10 by the string s.
 // Pre: s is a non-empty string containing only base ten digits {0,1,2,3,4,5,6,7,8,9}
 // and an optional sign {+, -} prefix.
-BigInteger stringToBigInteger(char* s);
+BigInteger stringToBigInteger(char* s) {
+    BigInteger B = newBigInteger();
+    
+    // note: magnitude list looks like:  LSD(front) ----- MSD(back)
+    // the true value of each list element = data * 10^n (n = its index in the list)
+    // there is an optional '+' or '-' at beginning of the number
+    
+    int stringLen = (int)strlen(s);
+    
+    if (stringLen == 0) { // no string, number is 0
+        return B;
+    }
+    
+    // case: the optional signs
+    if (s[0] == '-') { // first element of string is '-'
+        B->sign = -1;
+    } else if (s[0] == '+') { // first elem of string is '+'
+        B->sign = 1;
+    } else { // no sign, num is positive
+        B->sign = 1;
+    }
+    
+    // iterate through string
+    // number of digits in each list element = BASE
+    
+    // string starts at MSD
+    // we add to front of magnitude list each time we insert
+    
+    
+    
+    
+    
+    
+    return B;
+}
 
 // copy()
 // Returns a reference to a new BigInteger object in the same state as N.
@@ -278,6 +314,14 @@ void multiply(BigInteger P, BigInteger A, BigInteger B);
 // prod()
 // Returns a reference to a new BigInteger object representing A*B
 BigInteger prod(BigInteger A, BigInteger B);
+
+// normalize()
+// Takes in a BigInteger and normalizes it with respect to its base.
+void normalize(BigInteger B);
+
+// deleteLeadingZeros
+// Removes the leading zeros in the Most Significant Digits place of the BigInteger.
+void deleteLeadingZeros(BigInteger B);
 
 
 // Other operations -----------------------------------------------------------
