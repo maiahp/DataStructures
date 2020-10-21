@@ -177,7 +177,7 @@ int compare(BigInteger A, BigInteger B) {
     return returnVal;
 }
 
-// equals()sx
+// equals()
 // Return true (1) if A and B are equal, false (0) otherwise.
 int equals(BigInteger A, BigInteger B) {
     if (A == NULL || B == NULL) {
@@ -218,12 +218,25 @@ int equals(BigInteger A, BigInteger B) {
 
 // makeZero()
 // Re-sets N to the zero state.
-void makeZero(BigInteger N);
+void makeZero(BigInteger N) {
+    if (N == NULL) {
+        fprintf(stderr, "BigInteger Error: calling makeZero() on a NULL BigInteger reference\n");
+        exit(EXIT_FAILURE);
+    }
+    clear(N->magnitude); // delete all elements in magnitude
+    N->sign = 0; // set sign as 0
+}
 
 // negate()
 // Reverses the sign of N: positive <--> negative. Does nothing if N is in the
 // zero state.
-void negate(BigInteger N);
+void negate(BigInteger N) {
+    if (N == NULL) {
+        fprintf(stderr, "BigInteger Error: calling negate() on a NULL BigInteger reference\n");
+        exit(EXIT_FAILURE);
+    }
+    N->sign = (N->sign * -1); // if sign is 0, it stays 0
+}
 
 
 // BigInteger Arithmetic operations -----------------------------------------------
