@@ -10,7 +10,7 @@
 #include <math.h>
 #include <string.h>
 
-#define POWER 9 // 1 <= POWER <= 9
+#define POWER 1 // 1 <= POWER <= 9
 #define BASE (long)(pow(10,POWER) + 0.01)
 
 // prototypes --------------------------------------------------------------------------
@@ -255,19 +255,24 @@ BigInteger stringToBigInteger(char* s) {
     // the true value of each list element = data * 10^n (n = its index in the list)
     // there is an optional '+' or '-' at beginning of the number
     
-    int stringLen = (int)strlen(s);
+    int stringLen = (int)strlen(s); // strlen starts at 1
     
-    if (stringLen == 0) { // no string, number is 0
+    if (stringLen == 0) { // if string is "", number is 0
         return B;
     }
     
     // case: the optional signs
+    int hasSign;
+    
     if (s[0] == '-') { // first element of string is '-'
         B->sign = -1;
+        hasSign = 1;
     } else if (s[0] == '+') { // first elem of string is '+'
         B->sign = 1;
+        hasSign = 1;
     } else { // no sign, num is positive
         B->sign = 1;
+        hasSign = 0;
     }
     
     // iterate through string
@@ -275,6 +280,55 @@ BigInteger stringToBigInteger(char* s) {
     
     // string starts at MSD
     // we add to front of magnitude list each time we insert
+    
+    if (hasSign == 1) {
+        
+    }
+    
+    int numCharsPerElem = POWER;
+    
+    // strElem will be the entire POWER number of chars string that will be converted to a long and inserted in the list
+    // it must hold POWER number of elements + 1 for the null terminator at the end
+    char* strElem = NULL;
+    
+    int numChars = POWER; // will go down from the number of chars needed in each strElem to 0
+    
+    int i = stringLen;
+    
+    
+    while (strIndex < stringLen) { // iterate through entire string
+        
+        strElem = (char*)malloc(numCharsPerElem+1);
+        memset(strElem, '\0', numCharsPerElem+1);
+        
+        while (numChars > 0) { // grab chars up to the number POWER
+            
+            printf("%s", s[i]);
+            
+            strElem[numChars] = s[i];
+            
+            
+            
+            strcat(charToAdd, strElem);
+            printf("char to add: %s  stringElem is: %s\n", charToAdd, strElem);
+            
+            i--;
+            numChars--;
+           
+            
+            
+        }
+        // convert finished string to integer (atoi) and place into list
+        
+        
+        
+        strIndex+=POWER; // increment strIndex to be the new place to grab start of next strElem
+        free(strElem);
+        
+    }
+    
+    
+    
     
     
     
@@ -286,7 +340,23 @@ BigInteger stringToBigInteger(char* s) {
 
 // copy()
 // Returns a reference to a new BigInteger object in the same state as N.
-BigInteger copy(BigInteger N);
+BigInteger copy(BigInteger N) {
+    BigInteger copyN = newBigInteger();
+    copyN->sign = N->sign;
+    
+    // note:
+    // cannot use copyList() method here
+    // copyList allocates space on heap for a new List
+    // when calling newBigInteger(), space on heap is already allocated for a new list
+    // save values from N to copyN
+    
+    moveFront(N->magnitude);
+    while(index(N->magnitude) >= 0) {
+        append(copyN->magnitude, get(N->magnitude)); // save curr data into copyN
+        moveNext(N->magnitude);
+    }
+    return copyN;
+}
 
 // add()
 // Places the sum of A and B in the existing BigInteger S, overwriting its
@@ -328,4 +398,15 @@ void deleteLeadingZeros(BigInteger B);
 
 // printBigInteger()
 // Prints a base 10 string representation of N to filestream out.
-void printBigInteger(FILE* out, BigInteger N);
+void printBigInteger(FILE* out, BigInteger N) {
+    if (N == NULL) {
+        fprintf(stderr, "BigIntegerError: calling printBigInteger() on NULL BigInteger reference\n");
+        exit(EXIT_FAILURE);
+    }
+    // print MSD to LSD - print back to front
+    moveBack(N->magnitude);
+    while(index(N->magnitude) >= 0) {
+        fprintf(out, "%0*ld", POWER, get(N->magnitude));
+        movePrev(N->magnitude);
+    }
+}

@@ -46,6 +46,10 @@ int main(int argc, const char * argv[]) {
     }
     // end (testing)
     
+    BigInteger B;
+    char* s = "123456789\0"; // S MUST HAVE A NULL TERMINATOR
+    B = stringToBigInteger(s);
+    
     
     
     return 0;
