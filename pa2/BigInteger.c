@@ -10,7 +10,7 @@
 #include <math.h>
 #include <string.h>
 
-#define POWER 1 // 1 <= POWER <= 9
+#define POWER 5 // 1 <= POWER <= 9
 #define BASE (long)(pow(10,POWER) + 0.01)
 
 // prototypes --------------------------------------------------------------------------
@@ -249,11 +249,17 @@ void negate(BigInteger N) {
 // Pre: s is a non-empty string containing only base ten digits {0,1,2,3,4,5,6,7,8,9}
 // and an optional sign {+, -} prefix.
 BigInteger stringToBigInteger(char* s) {
-    BigInteger B = newBigInteger();
     
-    // note: magnitude list looks like:  LSD(front) ----- MSD(back)
+    // note:
+    // iterate through entire string from right side (LSD) to left side (MSD)
+    // we grab from LSD to MSD because the last grab may not have enough characters to = num POWER
+    // starting from LSD to MSD-1, we grab string in portions of num POWER
+    // leading zeros can be ignored (and will be ignored) ex: atol("006") = 6
+    // if power == 2, 2 digits to an element, if power == 9, 9 digits to an element
+    // The list looks like: LSD (front) ------- MSD (back)
     // the true value of each list element = data * 10^n (n = its index in the list)
-    // there is an optional '+' or '-' at beginning of the number
+    
+    BigInteger B = newBigInteger();
     
     int stringLen = (int)strlen(s); // strlen starts at 1
     
@@ -261,7 +267,7 @@ BigInteger stringToBigInteger(char* s) {
         return B;
     }
     
-    // case: the optional signs
+    // case: the optional signs '+' or '-' or neither at the beginning of s
     int hasSign;
     
     if (s[0] == '-') { // first element of string is '-'
@@ -275,65 +281,88 @@ BigInteger stringToBigInteger(char* s) {
         hasSign = 0;
     }
     
-    // iterate through string
-    // number of digits in each list element = BASE
     
-    // string starts at MSD
-    // we add to front of magnitude list each time we insert
+    // iterate through string s
+
+    int numElementsLeft; //  the num of elements left to insert into magnitude list
+    int numCharsInLastElem; // the chars left over in the last element to insert - MSD place of s
     
-    if (hasSign == 1) {
+    // Determine number of chars left over in the last element (MSD) that will be inserted into List
+    
+    if (hasSign == 0) { // if there is no sign in s
+        numElementsLeft = stringLen/POWER; // number of partitions of s = (the length of s / num of chars in each grab)
+        if (stringLen % POWER == 0) { // if there is no remainder, all partitions have equal num of chars
+            numElementsLeft--;
+        }
+        numCharsInLastElem = stringLen - (numElementsLeft * POWER); // calculate number of chars in the last element
         
+    } else { // s has a sign
+        numElementsLeft = (stringLen - 1)/POWER; // -1 from stringLen because don't include the sign
+        if ((stringLen-1) % POWER == 0) {
+            numElementsLeft--;
+        }
+        numCharsInLastElem = stringLen - (numElementsLeft * POWER); // calculate number of chars in the last element
     }
     
-    int numCharsPerElem = POWER;
+    printf("s is: %s\n", s);
     
-    // strElem will be the entire POWER number of chars string that will be converted to a long and inserted in the list
-    // it must hold POWER number of elements + 1 for the null terminator at the end
-    char* strElem = NULL;
+    char* strElem = NULL; // holds POWER number of elements + 1 for the null terminator at the end
+                          // for all insertions except for the last insertion (MSD)
     
-    int numChars = POWER; // will go down from the number of chars needed in each strElem to 0
-    
-    int i = stringLen;
-    
-    
-    while (strIndex < stringLen) { // iterate through entire string
+    int i = stringLen-1; // total num chars in s, will count down to 0 when iterating through s
+                       // start at right side (LSD and move to left side (MSD) of s)
+    while (i >= 0) { // while still iterating through chars in s (i = stringLen to 0)
         
-        strElem = (char*)malloc(numCharsPerElem+1);
-        memset(strElem, '\0', numCharsPerElem+1);
+        if (numElementsLeft == 0) { // last grab of string s - grabbing the MSD (left side)
+            
+            strElem = (char *)malloc(numCharsInLastElem+1); // allocate space for the string element
+            memset(strElem, '\0', numCharsInLastElem+1); // add null terminator character in last place
+            
+            // iterate through number of remaining chars
+            // save into strElem
+            int k = numCharsInLastElem-1;
+            while (k >= 0) {
+                strElem[k] = s[i];
+                i--; // decrement index of s
+                k--; // decrement num of chars remaining
+            }
+            
+            // when while exits, strElem holds the last char (MSD of s)
+            
+            // strElem may contain a '-', or '+'
+            // search for these and replace with a zero (a leading zero won't matter)
+            if (strElem[0] == '-' || strElem[0] == '+') {
+                strElem[0] = '0'; // replace with leading zero
+            }
+            
+            printf("s[%d] = %s\n", i, strElem); // testing
+            
+        } else { // we are not grabbing the last partition of s
+                 // always grab number POWER of elements (+1 for null terminator) for each partition (each strElem)
+            strElem = (char *)malloc(POWER+1);
+            memset(strElem, '\0', POWER+1);
+            
+            int k = POWER-1; // k is num of chars we are grabbing for each strElem - k = POWER to 0
+            while (k >= 0) { // while there are still chars to grab
+                strElem[k] = s[i]; // save chars in s into strElem
+                i--; // decrement index of s
+                k--; // decrement num of chars to grab
+            }
+            
+            printf("s[%d] = %s\n", i, strElem); // testing
+        }
         
-        while (numChars > 0) { // grab chars up to the number POWER
-            
-            printf("%s", s[i]);
-            
-            strElem[numChars] = s[i];
-            
-            
-            
-            strcat(charToAdd, strElem);
-            printf("char to add: %s  stringElem is: %s\n", charToAdd, strElem);
-            
-            i--;
-            numChars--;
-           
-            
+        // if-else exits, finished grabbing and storing one partition of s into strElem
+
+        numElementsLeft--; // decrement num elems left to grab from s
+        
+        long numToInsert = atol(strElem); // convert strElem to a long
+        append(B->magnitude, numToInsert); // insert into magnitude
+        
+        free(strElem);
+        strElem = NULL;
             
         }
-        // convert finished string to integer (atoi) and place into list
-        
-        
-        
-        strIndex+=POWER; // increment strIndex to be the new place to grab start of next strElem
-        free(strElem);
-        
-    }
-    
-    
-    
-    
-    
-    
-    
-    
     
     return B;
 }
