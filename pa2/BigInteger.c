@@ -281,14 +281,11 @@ BigInteger stringToBigInteger(char* s) {
         hasSign = 0;
     }
     
-    
     // iterate through string s
-
     int numElementsLeft; //  the num of elements left to insert into magnitude list
     int numCharsInLastElem; // the chars left over in the last element to insert - MSD place of s
     
-    // Determine number of chars left over in the last element (MSD) that will be inserted into List
-    
+    // Determine number of chars left over in the last partition of s
     if (hasSign == 0) { // if there is no sign in s
         numElementsLeft = stringLen/POWER; // number of partitions of s = (the length of s / num of chars in each grab)
         if (stringLen % POWER == 0) { // if there is no remainder, all partitions have equal num of chars
@@ -304,7 +301,7 @@ BigInteger stringToBigInteger(char* s) {
         numCharsInLastElem = stringLen - (numElementsLeft * POWER); // calculate number of chars in the last element
     }
     
-    printf("s is: %s\n", s);
+    //printf("s is: %s\n", s);
     
     char* strElem = NULL; // holds POWER number of elements + 1 for the null terminator at the end
                           // for all insertions except for the last insertion (MSD)
@@ -335,7 +332,7 @@ BigInteger stringToBigInteger(char* s) {
                 strElem[0] = '0'; // replace with leading zero
             }
             
-            printf("s[%d] = %s\n", i, strElem); // testing
+            //printf("s[%d] = %s\n", i, strElem); // testing
             
         } else { // we are not grabbing the last partition of s
                  // always grab number POWER of elements (+1 for null terminator) for each partition (each strElem)
@@ -349,7 +346,7 @@ BigInteger stringToBigInteger(char* s) {
                 k--; // decrement num of chars to grab
             }
             
-            printf("s[%d] = %s\n", i, strElem); // testing
+            //printf("s[%d] = %s\n", i, strElem); // testing
         }
         
         // if-else exits, finished grabbing and storing one partition of s into strElem
@@ -390,33 +387,228 @@ BigInteger copy(BigInteger N) {
 // add()
 // Places the sum of A and B in the existing BigInteger S, overwriting its
 // current state: S = A + B
-void add(BigInteger S, BigInteger A, BigInteger B);
+void add(BigInteger S, BigInteger A, BigInteger B) {
+    if (S == NULL) {
+        printf("BigInteger Error: calling add() on NULL BigInteger reference\n");
+        exit(EXIT_FAILURE);
+    }
+    if (S == A || S == B) {
+        // then we have to free S but save its data
+        BigInteger temp = sum(A, B);
+        S->sign = sign(temp);
+        
+        freeList(&(S->magnitude)); // delete S's list
+        S->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
+        freeBigInteger(&temp);
+        
+    } else { // S is not A or B
+        // delete S
+        freeBigInteger(&S);
+        
+        // sum returns a new Big Integer which will now be S
+        S = sum(A, B);
+    }
+    
+}
 
 // sum()
 // Returns a reference to a new BigInteger object representing A + B.
-BigInteger sum(BigInteger A, BigInteger B);
+BigInteger sum(BigInteger A, BigInteger B) {
+    if (A == NULL || B == NULL) {
+        printf("BigInteger Error: calling sum() on one or both NULL List references\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    BigInteger S = newBigInteger(); // S is the sum of A + B
+    
+    moveFront(A->magnitude);
+    moveFront(B->magnitude);
+    
+    long sum = 0; // the addition of A and B's corresponding elements
+    
+    while(index(A->magnitude) >= 0 || index(B->magnitude) >= 0) {
+        // if one list1 is longer than the other, it is as if adding (elem1 + 0)
+        if (index(A->magnitude) >= 0) { // if A's cursor is defined
+            sum += sign(A) * get(A->magnitude);
+        }
+        if (index(B->magnitude) >= 0) { // if B's cursor is defined
+            sum += sign(B) * get(B->magnitude);
+        }
+        
+        // add result to S magnitude list
+        prepend(S->magnitude, sum);
+        
+        sum = 0;
+        moveNext(A->magnitude);
+        moveNext(B->magnitude);
+    }
+    
+    return S;
+}
 
 // subtract()
 // Places the difference of A and B in the existing BigInteger D, overwriting
 // its current state: D = A - B
-void subtract(BigInteger D, BigInteger A, BigInteger B);
+void subtract(BigInteger D, BigInteger A, BigInteger B) {
+    if (D == NULL) {
+        printf("BigInteger Error: calling subtract() on NULL BigInteger reference\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    if (D == A || D == B) {
+        // then we have to free D but save its data
+        BigInteger temp = diff(A, B);
+        D->sign = sign(temp);
+        
+        freeList(&(D->magnitude)); // delete D's list
+        D->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
+        freeBigInteger(&temp);
+        
+    } else { // D is not A or B
+        // delete D
+        freeBigInteger(&D);
+        
+        // diff returns a new Big Integer which will now be D
+        D = diff(A, B);
+    }
+}
 
 // diff()
 // Returns a reference to a new BigInteger object representing A - B.
-BigInteger diff(BigInteger A, BigInteger B);
+BigInteger diff(BigInteger A, BigInteger B) {
+    if (A == NULL || B == NULL) {
+        printf("BigInteger Error: calling diff() on one or both NULL BigInteger references\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    BigInteger D = newBigInteger();
+    
+    moveFront(A->magnitude);
+    moveFront(B->magnitude);
+    
+    long diff = 0; // the addition of A and B's corresponding elements
+    
+    while(index(A->magnitude) >= 0 || index(B->magnitude) >= 0) {
+        // if one list1 is longer than the other, it is as if adding (elem1 + 0)
+        if (index(A->magnitude) >= 0) { // if A's cursor is defined
+            diff += sign(A) * get(A->magnitude);
+        }
+        if (index(B->magnitude) >= 0) { // if B's cursor is defined
+            diff -= sign(B) * get(B->magnitude);
+        }
+        
+        // add result to S magnitude list
+        prepend(D->magnitude, diff);
+        
+        diff = 0;
+        moveNext(A->magnitude);
+        moveNext(B->magnitude);
+    }
+    
+    return D;
+}
 
 // multiply()
 // Places the product of A and B in the existing BigInteger P, overwriting
 // its current state: P = A*B
-void multiply(BigInteger P, BigInteger A, BigInteger B);
+void multiply(BigInteger P, BigInteger A, BigInteger B) {
+    if (P == NULL) {
+        printf("BigInteger Error: calling multiply() on NULL BigInteger reference\n");
+        exit(EXIT_FAILURE);
+    }
+    if (P == A || P == B) {
+        // then we have to free P but save its data
+        BigInteger temp = prod(A, B);
+        P->sign = sign(temp);
+        
+        freeList(&(P->magnitude)); // delete P's list
+        P->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
+        freeBigInteger(&temp);
+        
+    } else { // P is not A or B
+        // delete P
+        freeBigInteger(&P);
+        
+        // prod returns a new Big Integer which will now be P
+        P = prod(A, B);
+    }
+}
 
 // prod()
 // Returns a reference to a new BigInteger object representing A*B
-BigInteger prod(BigInteger A, BigInteger B);
+BigInteger prod(BigInteger A, BigInteger B) {
+    if (A == NULL || B == NULL) {
+        printf("BigInteger Error: calling prod() on one or both NULL BigInteger references\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    BigInteger P = newBigInteger();
+    
+    // note:
+    /*
+     to multiply,
+     must have two while loops: A * B
+                  A1     A2     A3
+               x  0      B1     B2
+              ------------------------
+                 B2A1   B2A2   B2A3
+           B1A1  B1A2   B1A3     0
+     0*A1  0*A2   0*A3     0     0
+     
+     ^ Now add up the result
+     
+     the lists look like (LSD)(front) ----- (MSD)(back)
+     - so iteration goes from front to back for both
+     
+     multiply each element of B by all elements of A
+     - so iterating B is the outer while loop
+     - iterating A is the inner
+     
+     */
+    
+    if (sign(A) == sign(B)) { // both signs are + or -
+        P->sign = 1; // sign of P is always + when both signs are the same
+    } else { // signs are not the same
+        P->sign = -1; // sign of P is always - when signs are not the same
+    }
+    
+    BigInteger temp = newBigInteger();
+    long product = 0;
+    
+    moveFront(B->magnitude);
+    while(index(B->magnitude) >= 0) {
+        long B_data = get(B->magnitude);
+        
+        moveFront(A->magnitude);
+        while(index(A->magnitude) >= 0) {
+            long A_data = get(A->magnitude);
+            
+            product = B_data * A_data;
+            prepend(temp->magnitude, product);
+            
+            moveNext(A->magnitude);
+        }
+        // when while exits, there is a row of multiplication done
+        
+        add(P, temp, P); // add temp with P and save it in P
+        
+        
+        
+        
+        moveNext(B->magnitude);
+    }
+    
+    
+    
+    return P;
+}
 
 // normalize()
 // Takes in a BigInteger and normalizes it with respect to its base.
-void normalize(BigInteger B);
+void normalize(BigInteger B) {
+    // if B has a sign, we do not update sign (its been in multiplcation)
+    // if B has no sign, we give it a sign based on the MSD (if MSD is negative, entire thing is negative)
+}
 
 // deleteLeadingZeros
 // Removes the leading zeros in the Most Significant Digits place of the BigInteger.
@@ -432,6 +624,17 @@ void printBigInteger(FILE* out, BigInteger N) {
         fprintf(stderr, "BigIntegerError: calling printBigInteger() on NULL BigInteger reference\n");
         exit(EXIT_FAILURE);
     }
+    
+    if (sign(N) == 0) { // if N's magnitude is 0
+        fprintf(out, "0");
+        return;
+    }
+    if (N->sign == -1) { // if N's sign is -
+        fprintf(out, "-");
+    }
+    
+    // delete the leading zeros before printing
+    
     // print MSD to LSD - print back to front
     moveBack(N->magnitude);
     while(index(N->magnitude) >= 0) {
