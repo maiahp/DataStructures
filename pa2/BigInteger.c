@@ -419,6 +419,21 @@ BigInteger sum(BigInteger A, BigInteger B) {
         exit(EXIT_FAILURE);
     }
     
+    /* NOTE:
+     if A is the same Big Integer as B
+     then it is the same reference, and whenever anything happens with A's cursor
+     it will also move B's cursor, since A = B
+     So A must be made into a copy
+     So that we can use A and B = copyA
+     */
+    
+    int A_equals_B = 0;
+    if (A == B) { // A is the same reference as B
+        A_equals_B = 1;
+        B = copy(A); // copy returns a new BigInteger (must be freed later)
+                     // B now points to a copy of A (not A itself)
+    }
+    
     BigInteger S = newBigInteger(); // S is the sum of A + B
     
     moveFront(A->magnitude);
@@ -443,6 +458,12 @@ BigInteger sum(BigInteger A, BigInteger B) {
         moveNext(B->magnitude);
     }
     
+    if (A_equals_B == 1) { // if A and B were the same reference
+        freeBigInteger(&B); // delete the copy's data
+        B = A; // return B's value to its initial value, which is A
+    }
+    
+    normalize(S);
     return S;
 }
 
@@ -481,6 +502,13 @@ BigInteger diff(BigInteger A, BigInteger B) {
         exit(EXIT_FAILURE);
     }
     
+    int A_equals_B = 0;
+    if (A == B) { // A is the same reference as B
+        A_equals_B = 1;
+        B = copy(A); // copy returns a new BigInteger (must be freed later)
+                     // B now points to a copy of A (not A itself)
+    }
+    
     BigInteger D = newBigInteger();
     
     moveFront(A->magnitude);
@@ -505,6 +533,12 @@ BigInteger diff(BigInteger A, BigInteger B) {
         moveNext(B->magnitude);
     }
     
+    if (A_equals_B == 1) { // if A and B were the same reference
+        freeBigInteger(&B); // delete the copy's data
+        B = A; // return B's value to its initial value, which is A
+    }
+    
+    normalize(D);
     return D;
 }
 
@@ -542,7 +576,12 @@ BigInteger prod(BigInteger A, BigInteger B) {
         exit(EXIT_FAILURE);
     }
     
-    BigInteger P = newBigInteger();
+    int A_equals_B = 0;
+    if (A == B) { // A is the same reference as B
+        A_equals_B = 1;
+        B = copy(A); // copy returns a new BigInteger (must be freed later)
+                     // B now points to a copy of A (not A itself)
+    }
     
     // note:
     /*
@@ -566,6 +605,8 @@ BigInteger prod(BigInteger A, BigInteger B) {
      
      */
     
+    BigInteger P = newBigInteger();
+    
     if (sign(A) == sign(B)) { // both signs are + or -
         P->sign = 1; // sign of P is always + when both signs are the same
     } else { // signs are not the same
@@ -574,6 +615,10 @@ BigInteger prod(BigInteger A, BigInteger B) {
     
     BigInteger temp = newBigInteger();
     long product = 0;
+    int shiftCount = 0; // after every row of multiplication
+                            // A zero is added to the LSD place (front of list)
+                            // for 0th row of multiplication, shift is 0
+                            // for 1st row of multiplication, shift is 1 and so on
     
     moveFront(B->magnitude);
     while(index(B->magnitude) >= 0) {
@@ -588,18 +633,30 @@ BigInteger prod(BigInteger A, BigInteger B) {
             
             moveNext(A->magnitude);
         }
-        // when while exits, there is a row of multiplication done
         
+        // when while exits, there is a row of multiplication done
         add(P, temp, P); // add temp with P and save it in P
         
+        // once finished with a row of multiplication
+        // add a zero to the LSD place (front of list) of B
+        shiftCount++;
         
-        
+        int i = 0;
+        while(i < shiftCount) {
+            prepend(B->magnitude, (long)0);
+            i++;
+        }
         
         moveNext(B->magnitude);
     }
     
     
+    if (A_equals_B == 1) { // if A and B were the same reference
+        freeBigInteger(&B); // delete the copy's data
+        B = A; // return B's value to its initial value, which is A
+    }
     
+    normalize(P);
     return P;
 }
 
@@ -607,12 +664,40 @@ BigInteger prod(BigInteger A, BigInteger B) {
 // Takes in a BigInteger and normalizes it with respect to its base.
 void normalize(BigInteger B) {
     // if B has a sign, we do not update sign (its been in multiplcation)
+    // have to double check that MSD place doesn't have a sign
+    
     // if B has no sign, we give it a sign based on the MSD (if MSD is negative, entire thing is negative)
+    
+    
+    // delete leading zeros in normalize - after the final number is done
 }
 
 // deleteLeadingZeros
 // Removes the leading zeros in the Most Significant Digits place of the BigInteger.
-void deleteLeadingZeros(BigInteger B);
+void deleteLeadingZeros(BigInteger B) {
+    
+    // B's sign is 0 and B has no elements, then we do nothing
+    if (B->sign == 0) {
+        if (length(B->magnitude) == 0) {
+            return;
+        }
+    }
+    
+    // start at MSD place in B's magnitude
+    moveBack(B->magnitude);
+    while (B->magnitude >= 0) {
+        long elem = get(B->magnitude);
+        if (elem == 0) {
+            delete(B->magnitude); // deletes the current cursor elem
+            moveBack(B->magnitude); // must reinitialize the cursor
+        } else { // the first element that is not zero
+            break;
+        }
+        movePrev(B->magnitude);
+    }
+    // if we have exited the while, all elements have been deleted (the BigInt is 0)
+    B->sign = 0; // set sign to 0 since it was not already
+}
 
 
 // Other operations -----------------------------------------------------------
@@ -638,7 +723,7 @@ void printBigInteger(FILE* out, BigInteger N) {
     // print MSD to LSD - print back to front
     moveBack(N->magnitude);
     while(index(N->magnitude) >= 0) {
-        fprintf(out, "%0*ld", POWER, get(N->magnitude));
+        fprintf(out, "%0*ld", POWER, get(N->magnitude)); // POWER gets put in *
         movePrev(N->magnitude);
     }
 }
