@@ -621,19 +621,24 @@ BigInteger prod(BigInteger A, BigInteger B) {
     
     moveFront(B->magnitude);
     while(index(B->magnitude) >= 0) {
-        long B_data = get(B->magnitude);
+        makeZero(temp); // start with an empty list to hold multiplication results
+        temp->sign = 1;
+        
+        long B_elem = get(B->magnitude);
         
         moveFront(A->magnitude);
         while(index(A->magnitude) >= 0) {
-            long A_data = get(A->magnitude);
+            long A_elem = get(A->magnitude);
             
-            product = B_data * A_data;
-            append(temp->magnitude, product); // CHECK THISS!!!!!!!!!!!!!!!! that it is not prepend
+            product = B_elem * A_elem;
+            append(temp->magnitude, product);
             
-            moveNext(A->magnitude);
+            moveNext(A->magnitude); // move to next A elem
         }
         
         // when while exits, there is a row of multiplication done
+        // normalize temp then add temp to P
+        normalize(temp);
         add(P, temp, P); // add temp with P and save it in P
         
         // once finished with a row of multiplication
@@ -661,7 +666,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
     
     add(P, temp, P); // add temp to P and save in P (for the addition portion of the multiplication)
     
-    normalize(P); // normalize again after adding
+    // don't normalize again after adding bc add() calls normalize
     
     freeBigInteger(&temp);
     
@@ -671,6 +676,22 @@ BigInteger prod(BigInteger A, BigInteger B) {
 // normalize()
 // Takes in a BigInteger and normalizes it with respect to its base.
 void normalize(BigInteger B) {
+    
+    // if the length of B's magnitude is 0, then don't proceed
+    if (length(B->magnitude) == 0) {
+        return;
+    }
+    
+    // if MSD is negative, all the elems in magnitude have a - sign
+    // get rid of these internal negative signs in order to normalize
+    if (back(B->magnitude) < 0) {
+        B->sign = -1;
+        moveBack(B->magnitude);
+        while(index(B->magnitude) >= 0) {
+            set(B->magnitude, -1*get(B->magnitude));
+            movePrev(B->magnitude);
+        }
+    }
     
     // if B has a sign, its sign is not updated (its been in multiplication)
     // if B has no sign, it is given a sign based on the MSD after normalization (if MSD is negative, entire thing is negative)
@@ -765,20 +786,6 @@ void normalize(BigInteger B) {
         }
     }
     
-    
-    // if B is a negative number
-    // some or all of the elements inside B will be negative
-    // the (-) signs inside the elems must be removed
-    if (B->sign == -1) {
-        moveBack(B->magnitude);
-        while(index(B->magnitude) >= 0) {
-            if (get(B->magnitude) < 0) {
-                set(B->magnitude, -1*get(B->magnitude)); // set the elem as its abs value
-            }
-            movePrev(B->magnitude);
-        }
-    }
-    
     // delete leading zeros in normalize - after the final number is done
     deleteLeadingZeros(B);
     
@@ -797,7 +804,7 @@ void deleteLeadingZeros(BigInteger B) {
     
     // start at MSD place in B's magnitude
     moveBack(B->magnitude);
-    while (B->magnitude >= 0) {
+    while (index(B->magnitude) >= 0) {
         long elem = get(B->magnitude);
         if (elem == 0) {
             delete(B->magnitude); // deletes the current cursor elem

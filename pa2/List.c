@@ -443,7 +443,10 @@ void delete(List L) {
     
     Node nodeToDelete = L->cursor;
     
-    if (nodeToDelete == L->front) { // node to delete is the front of L
+    if (length(L) == 1) { // If L only has 1 element, it is now empty
+        clear(L);
+        return;
+    } else if (nodeToDelete == L->front) { // node to delete is the front of L
         Node newFront = L->front->next;
         newFront->prev = NULL;
         L->front = newFront;
@@ -467,8 +470,6 @@ void delete(List L) {
     
     // delete node
     freeNode(&nodeToDelete);
-
-    
 }
 
 // set()
