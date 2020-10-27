@@ -63,6 +63,7 @@ int main(int argc, const char * argv[]) {
     
     // grab fourth line of file as a string
     bigIntStr2 = (char *)malloc(strSize2+2);
+    fscanf(in, "%s\n", bigIntStr2);
     
     fclose(in); // done reading in file
     

@@ -450,7 +450,7 @@ BigInteger sum(BigInteger A, BigInteger B) {
         }
         
         // add result to S magnitude list
-        prepend(S->magnitude, sum);
+        append(S->magnitude, sum);
         
         sum = 0;
         moveNext(A->magnitude);
@@ -525,7 +525,7 @@ BigInteger diff(BigInteger A, BigInteger B) {
         }
         
         // add result to S magnitude list
-        prepend(D->magnitude, diff);
+        append(D->magnitude, diff);
         
         diff = 0;
         moveNext(A->magnitude);
@@ -628,7 +628,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
             long A_data = get(A->magnitude);
             
             product = B_data * A_data;
-            prepend(temp->magnitude, product);
+            append(temp->magnitude, product); // CHECK THISS!!!!!!!!!!!!!!!! that it is not prepend
             
             moveNext(A->magnitude);
         }
@@ -672,13 +672,12 @@ BigInteger prod(BigInteger A, BigInteger B) {
 // Takes in a BigInteger and normalizes it with respect to its base.
 void normalize(BigInteger B) {
     
-    // if B has a sign, its sign is not updated (its been in multiplcation)
+    // if B has a sign, its sign is not updated (its been in multiplication)
     // if B has no sign, it is given a sign based on the MSD after normalization (if MSD is negative, entire thing is negative)
     int hasSign = 0;
     if (sign(B) != 0) {
         hasSign = 1;
     }
-    
     
     // iterate through B's magnitude list
     // start at LSD and move to MSD (so that a carry can be taken from element on the right (the next larger power element)
@@ -700,8 +699,8 @@ void normalize(BigInteger B) {
         carry = 0; // reset carry to 0 for the next element's carry
         // carry is incremented when the element is being normalized
         
-        // An element must be in range:   -(BASE-1) <= currElem <= (BASE-1)
-        while (currElem < -(BASE-1) || currElem > (BASE-1)) { // while the element is out of range of an accepted value
+        // An element must be in range:   0 <= currElem <= (BASE-1)
+        while (currElem < 0 || currElem > (BASE-1)) { // while the element is out of range of an accepted value
             
             if (currElem > (BASE-1)) { // if element is too large
                 
@@ -711,17 +710,20 @@ void normalize(BigInteger B) {
                 if (index(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
                     append(B->magnitude, 1); // place a carry (always 1) as the new MSD
                     
-                    // if the MSD is positive, sign of B is positive
-                    B->sign = 1;
+                    // else the MSD is positive, sign of B is positive
+                    if (hasSign == 0) { // if multiplication did not occur, update sign
+                        B->sign = 1;
+                    }
                     break;
                 }
 
                 // subtract BASE
                 // add a positive carry to the next larger element
                 currElem -= BASE;
+                set(B->magnitude, currElem);
                 carry += 1;
             }
-            if (currElem < -(BASE - 1)) { // element is too small
+            if (currElem < 0) { // element is too small
                 
                 // if currElem is the MSD and it is negative
                 // there is no carry over to the
@@ -729,14 +731,18 @@ void normalize(BigInteger B) {
                     // cannot borrow from next largest elem because there is no more elems
                     // leave the digit as is
                     
-                    // if the MSD is negative, sign of B is negative
-                    B->sign = -1;
+                    // the MSD is negative, sign of B is negative, remove sign in MSD element
+                    set(B->magnitude, -1*currElem);
+                    if (hasSign == 0) { // if multiplication did not occur, update sign
+                        B->sign = -1;
+                    }
                     break;
                 }
 
                 // add BASE
                 // subtract a carry from the next larger element
                 currElem += BASE;
+                set(B->magnitude, currElem); // set the currElem
                 carry -= 1;
             }
         }
@@ -745,15 +751,32 @@ void normalize(BigInteger B) {
         moveNext(B->magnitude);
     }
     
-    // if B is a negative number
-    // most of the elems inside of B will be negative
-    // the signs must be removed because B's sign is known from its sign variable
-    moveBack(B->magnitude);
-    while(index(B->magnitude) >= 0) {
-        if (get(B->magnitude) < 0) {
-            set(B->magnitude, -1*get(B->magnitude)); // set the element as its absolute value
+    // if B still does not have a sign
+    // this would happen when:
+    // multiplication has not occured
+    // the MSD of B was not out of range of accepted values
+    // sign of MSD element will be the sign of B
+    // note: if B is 0, the sign will be updated to zero in deleteLeadingZeros()
+    if (hasSign == 0) {
+        if (back(B->magnitude) < 0) {
+            B->sign = -1;
+        } else {
+            B->sign = 1;
         }
-        movePrev(B->magnitude);
+    }
+    
+    
+    // if B is a negative number
+    // some or all of the elements inside B will be negative
+    // the (-) signs inside the elems must be removed
+    if (B->sign == -1) {
+        moveBack(B->magnitude);
+        while(index(B->magnitude) >= 0) {
+            if (get(B->magnitude) < 0) {
+                set(B->magnitude, -1*get(B->magnitude)); // set the elem as its abs value
+            }
+            movePrev(B->magnitude);
+        }
     }
     
     // delete leading zeros in normalize - after the final number is done
@@ -780,7 +803,7 @@ void deleteLeadingZeros(BigInteger B) {
             delete(B->magnitude); // deletes the current cursor elem
             moveBack(B->magnitude); // must reinitialize the cursor
         } else { // the first element that is not zero
-            break;
+            return;
         }
         movePrev(B->magnitude);
     }
@@ -808,10 +831,18 @@ void printBigInteger(FILE* out, BigInteger N) {
     }
     
     // delete the leading zeros before printing
+    deleteLeadingZeros(N);
     
-    // print MSD to LSD - print back to front
+    // print the MSD place with no leading zeros
     moveBack(N->magnitude);
+    long data = get(N->magnitude);
+    fprintf(out, "%ld", data);
+    movePrev(N->magnitude); // move to next elem
+    
+    // while not at MSD place
+    // print MSD to LSD - print back to front
     while(index(N->magnitude) >= 0) {
+        data = get(N->magnitude);
         fprintf(out, "%0*ld", POWER, get(N->magnitude)); // POWER gets put in *
         movePrev(N->magnitude);
     }
