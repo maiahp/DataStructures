@@ -557,6 +557,7 @@ void multiply(BigInteger P, BigInteger A, BigInteger B) {
         freeList(&(P->magnitude)); // delete P's list
         P->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
         freeBigInteger(&temp);
+        temp = NULL;
         
     } else { // P is not A or B
         // delete P
@@ -624,21 +625,20 @@ BigInteger prod(BigInteger A, BigInteger B) {
         makeZero(temp); // start with an empty list to hold multiplication results
         temp->sign = 1;
         
-        long B_elem = get(B->magnitude);
+        long curr_B_elem = get(B->magnitude);
         
         moveFront(A->magnitude);
         while(index(A->magnitude) >= 0) {
-            long A_elem = get(A->magnitude);
+            long curr_A_elem = get(A->magnitude);
             
-            product = B_elem * A_elem;
+            product = curr_B_elem * curr_A_elem;
             append(temp->magnitude, product);
             
             moveNext(A->magnitude); // move to next A elem
         }
         
         // when while exits, there is a row of multiplication done
-        // normalize temp then add temp to P
-        normalize(temp);
+        // add temp to P (don't call normalize because add calls normalize)
         add(P, temp, P); // add temp with P and save it in P
         
         // once finished with a row of multiplication
@@ -647,10 +647,10 @@ BigInteger prod(BigInteger A, BigInteger B) {
         
         int i = 0;
         while(i < shiftCount) {
-            prepend(B->magnitude, (long)0);
+            prepend(temp->magnitude, (long)0);
             i++;
         }
-        
+
         moveNext(B->magnitude);
     }
     
@@ -660,13 +660,9 @@ BigInteger prod(BigInteger A, BigInteger B) {
         B = A; // return B's value to its initial value, which is A
     }
     
-    normalize(P); // normalize after multiplication
-    
-    // if after normalizing, the result is 0, can still add because sum() takes care of this case
-    
     add(P, temp, P); // add temp to P and save in P (for the addition portion of the multiplication)
     
-    // don't normalize again after adding bc add() calls normalize
+    // don't normalize because add() calls normalize()
     
     freeBigInteger(&temp);
     
@@ -723,6 +719,10 @@ void normalize(BigInteger B) {
         // An element must be in range:   0 <= currElem <= (BASE-1)
         while (currElem < 0 || currElem > (BASE-1)) { // while the element is out of range of an accepted value
             
+            // if a carry has been appended as new MSD in list
+            // this flag will be set, and there will be no addition to the carry variable
+            int carryOccured = 0;
+            
             if (currElem > (BASE-1)) { // if element is too large
                 
                 // if currElem is the MSD
@@ -730,19 +730,22 @@ void normalize(BigInteger B) {
                 // and the positive carry is placed into it
                 if (index(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
                     append(B->magnitude, 1); // place a carry (always 1) as the new MSD
+                    carryOccured = 1;
                     
-                    // else the MSD is positive, sign of B is positive
+                    // if reached here, the MSD is positive so sign of B is positive
                     if (hasSign == 0) { // if multiplication did not occur, update sign
                         B->sign = 1;
                     }
-                    break;
                 }
 
                 // subtract BASE
                 // add a positive carry to the next larger element
                 currElem -= BASE;
                 set(B->magnitude, currElem);
-                carry += 1;
+                
+                if (carryOccured == 0) {
+                    carry += 1;
+                }
             }
             if (currElem < 0) { // element is too small
                 
