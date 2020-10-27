@@ -1,9 +1,9 @@
-//
-//  BigInteger.h
-//  pa2
-//
-//  Created by Maiah Pardo on 10/20/20.
-//
+/*
+* Maiah Pardo, mapardo
+* 2020 Fall CSE 101 PA2
+* BigInteger.h
+* Header file for Big Integer ADT
+*/
 
 #ifndef BigInteger_h
 #define BigInteger_h

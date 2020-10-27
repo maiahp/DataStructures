@@ -1,10 +1,9 @@
-//
-//  BigInteger.c
-//  pa2
-//
-//  Created by Maiah Pardo on 10/20/20.
-//
-
+/*
+* Maiah Pardo, mapardo
+* 2020 Fall CSE 101 PA2
+* BigInteger.c
+* A Big Integer whose purpose is to perform arithmetic operations on arbitrarily large signed integers.
+*/
 #include "BigInteger.h"
 #include "List.h"
 #include <math.h>
@@ -613,7 +612,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
         P->sign = -1; // sign of P is always - when signs are not the same
     }
     
-    BigInteger temp = newBigInteger();
+    BigInteger temp = newBigInteger(); // must be freed after use
     long product = 0;
     int shiftCount = 0; // after every row of multiplication
                             // A zero is added to the LSD place (front of list)
@@ -656,20 +655,110 @@ BigInteger prod(BigInteger A, BigInteger B) {
         B = A; // return B's value to its initial value, which is A
     }
     
-    normalize(P);
+    normalize(P); // normalize after multiplication
+    
+    // if after normalizing, the result is 0, can still add because sum() takes care of this case
+    
+    add(P, temp, P); // add temp to P and save in P (for the addition portion of the multiplication)
+    
+    normalize(P); // normalize again after adding
+    
+    freeBigInteger(&temp);
+    
     return P;
 }
 
 // normalize()
 // Takes in a BigInteger and normalizes it with respect to its base.
 void normalize(BigInteger B) {
-    // if B has a sign, we do not update sign (its been in multiplcation)
-    // have to double check that MSD place doesn't have a sign
     
-    // if B has no sign, we give it a sign based on the MSD (if MSD is negative, entire thing is negative)
+    // if B has a sign, its sign is not updated (its been in multiplcation)
+    // if B has no sign, it is given a sign based on the MSD after normalization (if MSD is negative, entire thing is negative)
+    int hasSign = 0;
+    if (sign(B) != 0) {
+        hasSign = 1;
+    }
     
+    
+    // iterate through B's magnitude list
+    // start at LSD and move to MSD (so that a carry can be taken from element on the right (the next larger power element)
+    // magnitude looks like LSD (front) and MSD (back)
+    
+    
+    int carry = 0; // will hold the value carried over to the next larger power elem
+    
+    moveFront(B->magnitude);
+    while(index(B->magnitude) >= 0) { // while the cursor is defined
+        
+        // if the element does not fall in the range 0 - (base-1)
+        // then it must be normalized
+        long currElem = get(B->magnitude);
+        
+        currElem += carry; // add the carry to the element
+        set(B->magnitude, currElem); // update the currElem to include carry
+        
+        carry = 0; // reset carry to 0 for the next element's carry
+        // carry is incremented when the element is being normalized
+        
+        // An element must be in range:   -(BASE-1) <= currElem <= (BASE-1)
+        while (currElem < -(BASE-1) || currElem > (BASE-1)) { // while the element is out of range of an accepted value
+            
+            if (currElem > (BASE-1)) { // if element is too large
+                
+                // if currElem is the MSD
+                // then a new MSD is added to the list
+                // and the positive carry is placed into it
+                if (index(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
+                    append(B->magnitude, 1); // place a carry (always 1) as the new MSD
+                    
+                    // if the MSD is positive, sign of B is positive
+                    B->sign = 1;
+                    break;
+                }
+
+                // subtract BASE
+                // add a positive carry to the next larger element
+                currElem -= BASE;
+                carry += 1;
+            }
+            if (currElem < -(BASE - 1)) { // element is too small
+                
+                // if currElem is the MSD and it is negative
+                // there is no carry over to the
+                if (index(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
+                    // cannot borrow from next largest elem because there is no more elems
+                    // leave the digit as is
+                    
+                    // if the MSD is negative, sign of B is negative
+                    B->sign = -1;
+                    break;
+                }
+
+                // add BASE
+                // subtract a carry from the next larger element
+                currElem += BASE;
+                carry -= 1;
+            }
+        }
+ 
+        // move to next larger power element
+        moveNext(B->magnitude);
+    }
+    
+    // if B is a negative number
+    // most of the elems inside of B will be negative
+    // the signs must be removed because B's sign is known from its sign variable
+    moveBack(B->magnitude);
+    while(index(B->magnitude) >= 0) {
+        if (get(B->magnitude) < 0) {
+            set(B->magnitude, -1*get(B->magnitude)); // set the element as its absolute value
+        }
+        movePrev(B->magnitude);
+    }
     
     // delete leading zeros in normalize - after the final number is done
+    deleteLeadingZeros(B);
+    
 }
 
 // deleteLeadingZeros

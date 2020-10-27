@@ -1,9 +1,9 @@
-//
-//  main.c
-//  pa2
-//
-//  Created by Maiah Pardo on 10/20/20.
-//
+/*
+* Maiah Pardo, mapardo
+* 2020 Fall CSE 101 PA2
+* Arithmetic.c
+* Client module for the Big Integer ADT
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,11 +46,108 @@ int main(int argc, const char * argv[]) {
     }
     // end (testing)
     
-    BigInteger B;
-    char* s = "-123456789\0"; // S MUST HAVE A NULL TERMINATOR
-    B = stringToBigInteger(s);
+    
+    int strSize1, strSize2;
+    char *bigIntStr1, *bigIntStr2;
+    
+    // grab first line of the file as an int
+    fscanf(in, "%d\n", &strSize1); // %d\n means any \n will be ignored
+    bigIntStr1 = (char *)malloc(strSize1+2); // create a string of size strSize1, +2 so that all characters are grabbed
+    
+    // grab second line of file as a string
+    fscanf(in, "%s\n", bigIntStr1);
     
     
-    free(&B);
+    // grab third line of file as an int
+    fscanf(in, "%d\n", &strSize2);
+    
+    // grab fourth line of file as a string
+    bigIntStr2 = (char *)malloc(strSize2+2);
+    
+    fclose(in); // done reading in file
+    
+    
+    BigInteger A, B, S, D, P, M, R;
+    A = stringToBigInteger(bigIntStr1);
+    B = stringToBigInteger(bigIntStr2);
+    
+    free(bigIntStr1);
+    free(bigIntStr2);
+    
+    
+    // compute the values
+    
+    // A
+    printBigInteger(stdout, A);
+    fprintf(stdout, "\n\n");
+    
+    // B
+    printBigInteger(stdout, B);
+    fprintf(stdout, "\n\n");
+    
+    // A + B
+    S = sum(A, B);
+    printBigInteger(stdout, S);
+    fprintf(stdout, "\n\n");
+    
+    // A - B
+    D = diff(A, B);
+    printBigInteger(stdout, D);
+    fprintf(stdout, "\n\n");
+    
+    
+    // A - A
+    D = diff(A, A);
+    printBigInteger(stdout, D);
+    fprintf(stdout, "\n\n");
+    
+    // 3A - 2B
+    P = stringToBigInteger("3");
+    multiply(P, P, A); // P = 3A
+    M = stringToBigInteger("2");
+    multiply(M, M, B); // M = 2B
+    D = diff(P, M);
+    printBigInteger(stdout, D);
+    fprintf(stdout, "\n\n");
+    
+    // AB
+    P = prod(A, B);
+    printBigInteger(stdout, P);
+    fprintf(stdout, "\n\n");
+    
+    // A^2
+    P = prod(A, A);
+    printBigInteger(stdout, P);
+    fprintf(stdout, "\n\n");
+    
+    // B^2
+    P = prod(B, B);
+    printBigInteger(stdout, P);
+    fprintf(stdout, "\n\n");
+    
+    // 9A^4 + 16B^5
+    P = prod(A, A); // P = A^2
+    multiply(P, P, P); // P = A^2 * A^2 = A^4
+    R = stringToBigInteger("9");
+    multiply(P, P, R); // P = 9A^4
+    
+    M = prod(B, B); // M = B^2
+    multiply(M, M, M); // M = B^2 * B^2 = B^4
+    multiply(M, M, B); // M = B^4 * B = B^5
+    R = stringToBigInteger("16");
+    multiply(M, M, R); // M = 16B^5
+    
+    add(P, P, M); // P = 9A^4 + 16B^5
+    printBigInteger(stdout, P);
+    
+    freeBigInteger(&A);
+    freeBigInteger(&B);
+    freeBigInteger(&S);
+    freeBigInteger(&D);
+    freeBigInteger(&P);
+    freeBigInteger(&M);
+    freeBigInteger(&R);
+    
+    fclose(out);
     return 0;
 }
