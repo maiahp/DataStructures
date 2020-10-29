@@ -10,7 +10,7 @@
 #include <math.h>
 #include <string.h>
 
-#define POWER 5 // 1 <= POWER <= 9
+#define POWER 9 // 1 <= POWER <= 9
 #define BASE (long)(pow(10,POWER) + 0.01)
 
 // prototypes --------------------------------------------------------------------------
@@ -389,7 +389,7 @@ BigInteger copy(BigInteger N) {
 // current state: S = A + B
 void add(BigInteger S, BigInteger A, BigInteger B) {
     if (S == NULL) {
-        printf("BigInteger Error: calling add() on NULL BigInteger reference\n");
+        fprintf(stderr, "BigInteger Error: calling add() on NULL BigInteger reference\n");
         exit(EXIT_FAILURE);
     }
   
@@ -406,7 +406,7 @@ void add(BigInteger S, BigInteger A, BigInteger B) {
 // Returns a reference to a new BigInteger object representing A + B.
 BigInteger sum(BigInteger A, BigInteger B) {
     if (A == NULL || B == NULL) {
-        printf("BigInteger Error: calling sum() on one or both NULL List references\n");
+        fprintf(stderr, "BigInteger Error: calling sum() on one or both NULL List references\n");
         exit(EXIT_FAILURE);
     }
     
@@ -471,7 +471,7 @@ BigInteger sum(BigInteger A, BigInteger B) {
 // its current state: D = A - B
 void subtract(BigInteger D, BigInteger A, BigInteger B) {
     if (D == NULL) {
-        printf("BigInteger Error: calling subtract() on NULL BigInteger reference\n");
+        fprintf(stderr, "BigInteger Error: calling subtract() on NULL BigInteger reference\n");
         exit(EXIT_FAILURE);
     }
 
@@ -488,7 +488,7 @@ void subtract(BigInteger D, BigInteger A, BigInteger B) {
 // Returns a reference to a new BigInteger object representing A - B.
 BigInteger diff(BigInteger A, BigInteger B) {
     if (A == NULL || B == NULL) {
-        printf("BigInteger Error: calling diff() on one or both NULL BigInteger references\n");
+        fprintf(stderr, "BigInteger Error: calling diff() on one or both NULL BigInteger references\n");
         exit(EXIT_FAILURE);
     }
     
@@ -544,7 +544,7 @@ BigInteger diff(BigInteger A, BigInteger B) {
 // its current state: P = A*B
 void multiply(BigInteger P, BigInteger A, BigInteger B) {
     if (P == NULL) {
-        printf("BigInteger Error: calling multiply() on NULL BigInteger reference\n");
+        fprintf(stderr, "BigInteger Error: calling multiply() on NULL BigInteger reference\n");
         exit(EXIT_FAILURE);
     }
     
@@ -560,7 +560,7 @@ void multiply(BigInteger P, BigInteger A, BigInteger B) {
 // Returns a reference to a new BigInteger object representing A*B
 BigInteger prod(BigInteger A, BigInteger B) {
     if (A == NULL || B == NULL) {
-        printf("BigInteger Error: calling prod() on one or both NULL BigInteger references\n");
+        fprintf(stderr, "BigInteger Error: calling prod() on one or both NULL BigInteger references\n");
         exit(EXIT_FAILURE);
     }
     
@@ -763,11 +763,10 @@ void deleteLeadingZeros(BigInteger B) {
         long elem = get(B->magnitude);
         if (elem == 0) {
             delete(B->magnitude); // deletes the current cursor elem
-            moveBack(B->magnitude); // must reinitialize the cursor
         } else { // the first element that is not zero
             return;
         }
-        movePrev(B->magnitude);
+        moveBack(B->magnitude); // must reinitialize the cursor
     }
     // if we have exited the while, all elements have been deleted (the BigInt is 0)
     B->sign = 0; // set sign to 0 since it was not already
