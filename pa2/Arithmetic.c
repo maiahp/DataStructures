@@ -13,6 +13,7 @@
 int main(int argc, const char * argv[]) {
     FILE *in, *out;
     
+    /*
     if ( argc != 3 ) {
         fprintf(stderr, "Usage: %s <input file> <outputfile>\n", argv[0]);
         exit(1);
@@ -28,22 +29,22 @@ int main(int argc, const char * argv[]) {
         printf("Unable to open file %s for writing\n", argv[2]);
         exit(1);
     }
+     */
     
     
-    /*
+    
     // hardcoding the filename (testing):
-    in = fopen("in4.txt", "r");
+    in = fopen("in1.txt", "r");
     if(in==NULL) {
         printf("Unable to open file %s for reading\n", "in1.txt"); // print error message to stderr
         exit(1);
     }
-    out = fopen("out4.txt", "w");
+    out = fopen("out1.txt", "w");
     if(out==NULL) {
         printf("Unable to open file %s for writing\n", "output.txt"); // print error message to stderr
         exit(1);
     }
     // end (testing)
-     */
     
     
     int strSize1, strSize2;
@@ -67,7 +68,7 @@ int main(int argc, const char * argv[]) {
     fclose(in); // done reading in file
     
     
-    BigInteger A, B, S, D, P, M, R, Q;
+    BigInteger A, B, S, D, P, M, R;
     A = stringToBigInteger(bigIntStr1);
     B = stringToBigInteger(bigIntStr2);
     
@@ -121,17 +122,17 @@ int main(int argc, const char * argv[]) {
     fprintf(out, "\n\n");
     
     // B^2
-    Q = prod(B, B);
-    printBigInteger(out, Q);
+    P = prod(B, B);
+    printBigInteger(out, P);
     fprintf(out, "\n\n");
     
     // 9A^4 + 16B^5
-    // P = A^2 already
+    P = prod(A, A); // P = A^2
     multiply(P, P, P); // P = A^2 * A^2 = A^4
     R = stringToBigInteger("9");
     multiply(P, P, R); // P = 9A^4
     
-    // Q = B^2 already
+    M = prod(B, B); // M = B^2
     multiply(M, M, M); // M = B^2 * B^2 = B^4
     multiply(M, M, B); // M = B^4 * B = B^5
     R = stringToBigInteger("16");
@@ -147,7 +148,6 @@ int main(int argc, const char * argv[]) {
     freeBigInteger(&P);
     freeBigInteger(&M);
     freeBigInteger(&R);
-    freeBigInteger(&Q);
     
     fclose(out);
     return 0;
