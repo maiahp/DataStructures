@@ -4,6 +4,7 @@
 * BigInteger.c
 * A Big Integer whose purpose is to perform arithmetic operations on arbitrarily large signed integers.
 */
+
 #include "BigInteger.h"
 #include "List.h"
 #include <math.h>
@@ -434,6 +435,7 @@ BigInteger sum(BigInteger A, BigInteger B) {
     }
     
     BigInteger S = newBigInteger(); // S is the sum of A + B
+    S->sign = 1; // set sign as 1, will re-evaluate in normalize
     
     moveFront(A->magnitude);
     moveFront(B->magnitude);
@@ -509,6 +511,7 @@ BigInteger diff(BigInteger A, BigInteger B) {
     }
     
     BigInteger D = newBigInteger();
+    D->sign = 1; // set sign as 1, will re-evaluate in normalize
     
     moveFront(A->magnitude);
     moveFront(B->magnitude);
@@ -594,7 +597,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
            B1A1  B1A2   B1A3     0
      0*A1  0*A2   0*A3     0     0
      
-     ^ Now add up the result
+     ^ add up the result after each row of multiplication
      
      the lists look like (LSD)(front) ----- (MSD)(back)
      - so iteration goes from front to back for both
@@ -606,12 +609,6 @@ BigInteger prod(BigInteger A, BigInteger B) {
      */
     
     BigInteger P = newBigInteger();
-    
-    if (sign(A) == sign(B)) { // both signs are + or -
-        P->sign = 1; // sign of P is always + when both signs are the same
-    } else { // signs are not the same
-        P->sign = -1; // sign of P is always - when signs are not the same
-    }
     
     BigInteger temp = newBigInteger(); // must be freed after use
     long product = 0;
@@ -625,6 +622,14 @@ BigInteger prod(BigInteger A, BigInteger B) {
         makeZero(temp); // start with an empty list to hold multiplication results
         temp->sign = 1;
         
+        // shifting must go here
+        // must shift temp before saving into it, this way the shift is included
+        int i = 0;
+        while(i < shiftCount) {
+            prepend(temp->magnitude, (long)0); // temp starts empty so it doesn't matter where the zeros are placed, theoretically added to the front (LSD)
+            i++;
+        }
+        
         long curr_B_elem = get(B->magnitude);
         
         moveFront(A->magnitude);
@@ -632,7 +637,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
             long curr_A_elem = get(A->magnitude);
             
             product = curr_B_elem * curr_A_elem;
-            append(temp->magnitude, product);
+            append(temp->magnitude, product); // place product into the MSD place of temp (back)
             
             moveNext(A->magnitude); // move to next A elem
         }
@@ -644,12 +649,6 @@ BigInteger prod(BigInteger A, BigInteger B) {
         // once finished with a row of multiplication
         // add a zero to the LSD place (front of list) of B
         shiftCount++;
-        
-        int i = 0;
-        while(i < shiftCount) {
-            prepend(temp->magnitude, (long)0);
-            i++;
-        }
 
         moveNext(B->magnitude);
     }
@@ -660,9 +659,13 @@ BigInteger prod(BigInteger A, BigInteger B) {
         B = A; // return B's value to its initial value, which is A
     }
     
-    add(P, temp, P); // add temp to P and save in P (for the addition portion of the multiplication)
-    
-    // don't normalize because add() calls normalize()
+    // the sign of the result P cannot be evaluated properly before add() (and normalize(), which is called inside of add()) because these two methods change the sign
+    // sign must be evaluated before P is returned
+    if (sign(A) != sign(B)) { // if signs are not the same, the result is always negative
+        P->sign = -1;
+    } else { // if signs are the same, regardless of sign, the result is always positive
+        P->sign = 1;
+    }
     
     freeBigInteger(&temp);
     
@@ -680,6 +683,7 @@ void normalize(BigInteger B) {
     
     // if MSD is negative, all the elems in magnitude have a - sign
     // get rid of these internal negative signs in order to normalize
+    // also set sign to be negative
     if (back(B->magnitude) < 0) {
         B->sign = -1;
         moveBack(B->magnitude);
@@ -688,17 +692,10 @@ void normalize(BigInteger B) {
             movePrev(B->magnitude);
         }
     }
-    
-    // if B has a sign, its sign is not updated (its been in multiplication)
-    // if B has no sign, it is given a sign based on the MSD after normalization (if MSD is negative, entire thing is negative)
-    int hasSign = 0;
-    if (sign(B) != 0) {
-        hasSign = 1;
-    }
-    
+
     // iterate through B's magnitude list
     // start at LSD and move to MSD (so that a carry can be taken from element on the right (the next larger power element)
-    // magnitude looks like LSD (front) and MSD (back)
+    // magnitude list looks like LSD (front) and MSD (back)
     
     
     int carry = 0; // will hold the value carried over to the next larger power elem
@@ -710,7 +707,7 @@ void normalize(BigInteger B) {
         // then it must be normalized
         long currElem = get(B->magnitude);
         
-        currElem += carry; // add the carry to the element
+        currElem = (long)(currElem + carry); // add the carry to the element
         set(B->magnitude, currElem); // update the currElem to include carry
         
         carry = 0; // reset carry to 0 for the next element's carry
@@ -732,10 +729,6 @@ void normalize(BigInteger B) {
                     append(B->magnitude, 1); // place a carry (always 1) as the new MSD
                     carryOccured = 1;
                     
-                    // if reached here, the MSD is positive so sign of B is positive
-                    if (hasSign == 0) { // if multiplication did not occur, update sign
-                        B->sign = 1;
-                    }
                 }
 
                 // subtract BASE
@@ -757,9 +750,6 @@ void normalize(BigInteger B) {
                     
                     // the MSD is negative, sign of B is negative, remove sign in MSD element
                     set(B->magnitude, -1*currElem);
-                    if (hasSign == 0) { // if multiplication did not occur, update sign
-                        B->sign = -1;
-                    }
                     break;
                 }
 
@@ -773,20 +763,6 @@ void normalize(BigInteger B) {
  
         // move to next larger power element
         moveNext(B->magnitude);
-    }
-    
-    // if B still does not have a sign
-    // this would happen when:
-    // multiplication has not occured
-    // the MSD of B was not out of range of accepted values
-    // sign of MSD element will be the sign of B
-    // note: if B is 0, the sign will be updated to zero in deleteLeadingZeros()
-    if (hasSign == 0) {
-        if (back(B->magnitude) < 0) {
-            B->sign = -1;
-        } else {
-            B->sign = 1;
-        }
     }
     
     // delete leading zeros in normalize - after the final number is done

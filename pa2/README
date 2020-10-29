@@ -1,0 +1,38 @@
+Maiah Pardo
+mapardo
+ID # 1815393
+CSE 101
+PA2
+
+
+Included files:
+
+
+
+Arithmetic.c -  written by me. The top-level client for the BigInteger ADT.
+
+
+BigInteger.c - written by me. The BigInteger ADT is capable of performing arithmetic operations on arbitrarily large signed integers.
+
+
+BigInteger.h - provided by the Professor. A header file for the BigInteger ADT which contains the exported BigInteger operations.
+
+
+List.c  -  written by me. The List ADT is a bi-directional queue that includes a cursor for iteration.
+
+
+List.h  -  provided by the Professor. A header file for the List ADT which contains the exported List operations.
+
+
+BigIntegerTest.c - written by me. A test file for the BigInteger ADT.
+
+
+ListTest.c  -  written by me. A test file for the List ADT.
+
+
+README  -  written by me. A description of each file submitted for pa2.
+
+
+Makefile  -  provided by the Professor. Compiles the source code.
+
+

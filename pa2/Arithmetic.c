@@ -13,7 +13,6 @@
 int main(int argc, const char * argv[]) {
     FILE *in, *out;
     
-    /*
     if ( argc != 3 ) {
         fprintf(stderr, "Usage: %s <input file> <outputfile>\n", argv[0]);
         exit(1);
@@ -29,22 +28,22 @@ int main(int argc, const char * argv[]) {
         printf("Unable to open file %s for writing\n", argv[2]);
         exit(1);
     }
-     */
     
     
-    
+    /*
     // hardcoding the filename (testing):
-    in = fopen("in1.txt", "r");
+    in = fopen("in4.txt", "r");
     if(in==NULL) {
         printf("Unable to open file %s for reading\n", "in1.txt"); // print error message to stderr
         exit(1);
     }
-    out = fopen("out1.txt", "w");
+    out = fopen("out4.txt", "w");
     if(out==NULL) {
         printf("Unable to open file %s for writing\n", "output.txt"); // print error message to stderr
         exit(1);
     }
     // end (testing)
+     */
     
     
     int strSize1, strSize2;
@@ -68,7 +67,7 @@ int main(int argc, const char * argv[]) {
     fclose(in); // done reading in file
     
     
-    BigInteger A, B, S, D, P, M, R;
+    BigInteger A, B, S, D, P, M, R, Q;
     A = stringToBigInteger(bigIntStr1);
     B = stringToBigInteger(bigIntStr2);
     
@@ -79,28 +78,28 @@ int main(int argc, const char * argv[]) {
     // compute the values
     
     // A
-    printBigInteger(stdout, A);
-    fprintf(stdout, "\n\n");
+    printBigInteger(out, A);
+    fprintf(out, "\n\n");
     
     // B
-    printBigInteger(stdout, B);
-    fprintf(stdout, "\n\n");
+    printBigInteger(out, B);
+    fprintf(out, "\n\n");
     
     // A + B
     S = sum(A, B);
-    printBigInteger(stdout, S);
-    fprintf(stdout, "\n\n");
+    printBigInteger(out, S);
+    fprintf(out, "\n\n");
     
     // A - B
     D = diff(A, B);
-    printBigInteger(stdout, D);
-    fprintf(stdout, "\n\n");
+    printBigInteger(out, D);
+    fprintf(out, "\n\n");
     
     
     // A - A
     D = diff(A, A);
-    printBigInteger(stdout, D);
-    fprintf(stdout, "\n\n");
+    printBigInteger(out, D);
+    fprintf(out, "\n\n");
     
     // 3A - 2B
     P = stringToBigInteger("3");
@@ -108,38 +107,38 @@ int main(int argc, const char * argv[]) {
     M = stringToBigInteger("2");
     multiply(M, M, B); // M = 2B
     D = diff(P, M);
-    printBigInteger(stdout, D);
-    fprintf(stdout, "\n\n");
+    printBigInteger(out, D);
+    fprintf(out, "\n\n");
     
     // AB
     P = prod(A, B);
-    printBigInteger(stdout, P);
-    fprintf(stdout, "\n\n");
+    printBigInteger(out, P);
+    fprintf(out, "\n\n");
     
     // A^2
     P = prod(A, A);
-    printBigInteger(stdout, P);
-    fprintf(stdout, "\n\n");
+    printBigInteger(out, P);
+    fprintf(out, "\n\n");
     
     // B^2
-    P = prod(B, B);
-    printBigInteger(stdout, P);
-    fprintf(stdout, "\n\n");
+    Q = prod(B, B);
+    printBigInteger(out, Q);
+    fprintf(out, "\n\n");
     
     // 9A^4 + 16B^5
-    P = prod(A, A); // P = A^2
+    // P = A^2 already
     multiply(P, P, P); // P = A^2 * A^2 = A^4
     R = stringToBigInteger("9");
     multiply(P, P, R); // P = 9A^4
     
-    M = prod(B, B); // M = B^2
+    // Q = B^2 already
     multiply(M, M, M); // M = B^2 * B^2 = B^4
     multiply(M, M, B); // M = B^4 * B = B^5
     R = stringToBigInteger("16");
     multiply(M, M, R); // M = 16B^5
     
     add(P, P, M); // P = 9A^4 + 16B^5
-    printBigInteger(stdout, P);
+    printBigInteger(out, P);
     
     freeBigInteger(&A);
     freeBigInteger(&B);
@@ -148,6 +147,7 @@ int main(int argc, const char * argv[]) {
     freeBigInteger(&P);
     freeBigInteger(&M);
     freeBigInteger(&R);
+    freeBigInteger(&Q);
     
     fclose(out);
     return 0;
