@@ -392,22 +392,13 @@ void add(BigInteger S, BigInteger A, BigInteger B) {
         printf("BigInteger Error: calling add() on NULL BigInteger reference\n");
         exit(EXIT_FAILURE);
     }
-    if (S == A || S == B) {
-        // then we have to free S but save its data
-        BigInteger temp = sum(A, B);
-        S->sign = sign(temp);
-        
-        freeList(&(S->magnitude)); // delete S's list
-        S->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
-        freeBigInteger(&temp);
-        
-    } else { // S is not A or B
-        // delete S
-        freeBigInteger(&S);
-        
-        // sum returns a new Big Integer which will now be S
-        S = sum(A, B);
-    }
+  
+    BigInteger temp = sum(A, B);
+    S->sign = sign(temp);
+    
+    freeList(&(S->magnitude)); // delete S's list
+    S->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
+    freeBigInteger(&temp);
     
 }
 
@@ -455,8 +446,14 @@ BigInteger sum(BigInteger A, BigInteger B) {
         append(S->magnitude, sum);
         
         sum = 0;
-        moveNext(A->magnitude);
-        moveNext(B->magnitude);
+        
+        if (index(A->magnitude) >= 0) { // if A still has more elements
+            moveNext(A->magnitude);
+        }
+        
+        if (index(B->magnitude) >= 0) { // if B still has more elements
+            moveNext(B->magnitude);
+        }
     }
     
     if (A_equals_B == 1) { // if A and B were the same reference
@@ -464,6 +461,7 @@ BigInteger sum(BigInteger A, BigInteger B) {
         B = A; // return B's value to its initial value, which is A
     }
     
+    //printBigInteger(stdout, S);
     normalize(S);
     return S;
 }
@@ -476,23 +474,14 @@ void subtract(BigInteger D, BigInteger A, BigInteger B) {
         printf("BigInteger Error: calling subtract() on NULL BigInteger reference\n");
         exit(EXIT_FAILURE);
     }
+
+    BigInteger temp = diff(A, B);
+    D->sign = sign(temp);
     
-    if (D == A || D == B) {
-        // then we have to free D but save its data
-        BigInteger temp = diff(A, B);
-        D->sign = sign(temp);
-        
-        freeList(&(D->magnitude)); // delete D's list
-        D->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
-        freeBigInteger(&temp);
-        
-    } else { // D is not A or B
-        // delete D
-        freeBigInteger(&D);
-        
-        // diff returns a new Big Integer which will now be D
-        D = diff(A, B);
-    }
+    freeList(&(D->magnitude)); // delete D's list
+    D->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
+    freeBigInteger(&temp);
+
 }
 
 // diff()
@@ -531,8 +520,14 @@ BigInteger diff(BigInteger A, BigInteger B) {
         append(D->magnitude, diff);
         
         diff = 0;
-        moveNext(A->magnitude);
-        moveNext(B->magnitude);
+        
+        if (index(A->magnitude) >= 0) { // if A still has more elements
+            moveNext(A->magnitude);
+        }
+        
+        if (index(B->magnitude) >= 0) { // if B still has more elements
+            moveNext(B->magnitude);
+        }
     }
     
     if (A_equals_B == 1) { // if A and B were the same reference
@@ -552,23 +547,13 @@ void multiply(BigInteger P, BigInteger A, BigInteger B) {
         printf("BigInteger Error: calling multiply() on NULL BigInteger reference\n");
         exit(EXIT_FAILURE);
     }
-    if (P == A || P == B) {
-        // then we have to free P but save its data
-        BigInteger temp = prod(A, B);
-        P->sign = sign(temp);
-        
-        freeList(&(P->magnitude)); // delete P's list
-        P->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
-        freeBigInteger(&temp);
-        temp = NULL;
-        
-    } else { // P is not A or B
-        // delete P
-        freeBigInteger(&P);
-        
-        // prod returns a new Big Integer which will now be P
-        P = prod(A, B);
-    }
+    
+    BigInteger temp = prod(A, B);
+    P->sign = sign(temp);
+    
+    freeList(&(P->magnitude)); // delete P's list
+    P->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
+    freeBigInteger(&temp);
 }
 
 // prod()
@@ -609,6 +594,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
      */
     
     BigInteger P = newBigInteger();
+    P->sign = 1;
     
     BigInteger temp = newBigInteger(); // must be freed after use
     long product = 0;
@@ -642,6 +628,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
             moveNext(A->magnitude); // move to next A elem
         }
         
+        normalize(temp);
         // when while exits, there is a row of multiplication done
         // add temp to P (don't call normalize because add calls normalize)
         add(P, temp, P); // add temp with P and save it in P
@@ -698,7 +685,7 @@ void normalize(BigInteger B) {
     // magnitude list looks like LSD (front) and MSD (back)
     
     
-    int carry = 0; // will hold the value carried over to the next larger power elem
+    long carry = 0; // will hold the value carried over to the next larger power elem
     
     moveFront(B->magnitude);
     while(index(B->magnitude) >= 0) { // while the cursor is defined
@@ -714,53 +701,42 @@ void normalize(BigInteger B) {
         // carry is incremented when the element is being normalized
         
         // An element must be in range:   0 <= currElem <= (BASE-1)
-        while (currElem < 0 || currElem > (BASE-1)) { // while the element is out of range of an accepted value
-            
-            // if a carry has been appended as new MSD in list
-            // this flag will be set, and there will be no addition to the carry variable
-            int carryOccured = 0;
+        if (currElem < 0 || currElem > (BASE-1)) { // while the element is out of range of an accepted value
             
             if (currElem > (BASE-1)) { // if element is too large
-                
-                // if currElem is the MSD
-                // then a new MSD is added to the list
-                // and the positive carry is placed into it
-                if (index(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
-                    append(B->magnitude, 1); // place a carry (always 1) as the new MSD
-                    carryOccured = 1;
-                    
-                }
-
                 // subtract BASE
-                // add a positive carry to the next larger element
-                currElem -= BASE;
-                set(B->magnitude, currElem);
+                // add the positive carry to the next larger element
+                carry = currElem / BASE;
+                long subtractFromCurrElem = carry*BASE;
+                set(B->magnitude, currElem - subtractFromCurrElem);
                 
-                if (carryOccured == 0) {
-                    carry += 1;
-                }
             }
-            if (currElem < 0) { // element is too small
-                
-                // if currElem is the MSD and it is negative
-                // there is no carry over to the
-                if (index(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
-                    // cannot borrow from next largest elem because there is no more elems
-                    // leave the digit as is
-                    
-                    // the MSD is negative, sign of B is negative, remove sign in MSD element
-                    set(B->magnitude, -1*currElem);
-                    break;
-                }
-
+            else if (currElem < 0) { // element is too small
                 // add BASE
-                // subtract a carry from the next larger element
-                currElem += BASE;
+                // subtract the carry from the next larger element
+                
+                carry = (currElem/BASE) - 1;
+                
+                long addToCurrElem = carry * BASE; // the amount to add to currElem
+                // this amount is negative
+                // change it to positive and add to currElem
+                if (addToCurrElem < 0) {
+                    addToCurrElem = addToCurrElem * -1;
+                }
+                currElem = currElem + addToCurrElem;
                 set(B->magnitude, currElem); // set the currElem
-                carry -= 1;
+            }
+            
+            // if currElem is the MSD
+            // and there is a positive carry left over
+            // the positive carry is placed as the new MSD
+            if (index(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
+                if (carry > 0) { // if positive carry is left
+                    append(B->magnitude, carry); // place a carry as the new MSD
+                    carry = 0; // set carry to 0 since we used the carry
+                }
             }
         }
- 
         // move to next larger power element
         moveNext(B->magnitude);
     }
@@ -821,15 +797,17 @@ void printBigInteger(FILE* out, BigInteger N) {
     
     // print the MSD place with no leading zeros
     moveBack(N->magnitude);
-    long data = get(N->magnitude);
-    fprintf(out, "%ld", data);
-    movePrev(N->magnitude); // move to next elem
     
-    // while not at MSD place
     // print MSD to LSD - print back to front
     while(index(N->magnitude) >= 0) {
-        data = get(N->magnitude);
-        fprintf(out, "%0*ld", POWER, get(N->magnitude)); // POWER gets put in *
-        movePrev(N->magnitude);
+        long data = get(N->magnitude);
+        if (index(N->magnitude) == length(N->magnitude)-1) { // if we are at MSD
+            // don't print a leading zero
+            fprintf(out, "%ld", data);
+            movePrev(N->magnitude);
+        } else {
+            fprintf(out, "%0*ld", POWER, get(N->magnitude)); // POWER gets put in *
+            movePrev(N->magnitude);
+        }
     }
 }

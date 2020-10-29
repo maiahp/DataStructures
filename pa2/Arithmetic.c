@@ -13,7 +13,7 @@
 int main(int argc, const char * argv[]) {
     FILE *in, *out;
     
-    /*
+   
     if ( argc != 3 ) {
         fprintf(stderr, "Usage: %s <input file> <outputfile>\n", argv[0]);
         exit(1);
@@ -29,23 +29,22 @@ int main(int argc, const char * argv[]) {
         printf("Unable to open file %s for writing\n", argv[2]);
         exit(1);
     }
-     */
     
     
-    
+    /*
     // hardcoding the filename (testing):
-    in = fopen("in1.txt", "r");
+    in = fopen("inspecial.txt", "r");
     if(in==NULL) {
         printf("Unable to open file %s for reading\n", "in1.txt"); // print error message to stderr
         exit(1);
     }
-    out = fopen("out1.txt", "w");
+    out = fopen("outspecial.txt", "w");
     if(out==NULL) {
         printf("Unable to open file %s for writing\n", "output.txt"); // print error message to stderr
         exit(1);
     }
     // end (testing)
-    
+     */
     
     int strSize1, strSize2;
     char *bigIntStr1, *bigIntStr2;
@@ -95,6 +94,7 @@ int main(int argc, const char * argv[]) {
     D = diff(A, B);
     printBigInteger(out, D);
     fprintf(out, "\n\n");
+    freeBigInteger(&D);
     
     
     // A - A
@@ -105,26 +105,33 @@ int main(int argc, const char * argv[]) {
     // 3A - 2B
     P = stringToBigInteger("3");
     multiply(P, P, A); // P = 3A
+    
     M = stringToBigInteger("2");
     multiply(M, M, B); // M = 2B
+    
     D = diff(P, M);
     printBigInteger(out, D);
     fprintf(out, "\n\n");
+    freeBigInteger(&P);
+    freeBigInteger(&M);
     
     // AB
-    P = prod(A, B);
+    P = prod(A, B);         
     printBigInteger(out, P);
     fprintf(out, "\n\n");
+    freeBigInteger(&P);
     
     // A^2
     P = prod(A, A);
     printBigInteger(out, P);
     fprintf(out, "\n\n");
+    freeBigInteger(&P);
     
     // B^2
     P = prod(B, B);
     printBigInteger(out, P);
     fprintf(out, "\n\n");
+    freeBigInteger(&P);
     
     // 9A^4 + 16B^5
     P = prod(A, A); // P = A^2
