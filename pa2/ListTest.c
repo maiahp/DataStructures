@@ -69,13 +69,13 @@ int main() {
      // Testing front(), back(), and get()
      printf("\n\nFront of A is: %ld", front(A));
      printf("\nFront of B is: %ld", front(B));
-     printf("\nBack of B is: %ld", back(B));
+     printf("\nBack of A is: %ld", back(A));
      printf("\nBack of B is: %ld", back(B));
      
      movePrev(A);
      movePrev(B); movePrev(B);
-     printf("\nA: Value at index %d is: %ld", index(A), get(A));
-     printf("\nB: Value at index %d is: %ld", index(B), get(B));
+     printf("\nA: Value at index %d is: %ld", cursorIndex(A), get(A));
+     printf("\nB: Value at index %d is: %ld", cursorIndex(B), get(B));
      
      // Testing deleteFront(), deleteBack(), delete()
      printf("\n\nCalling deleteFront() on A");
@@ -90,7 +90,7 @@ int main() {
      
      moveFront(A);
      moveNext(A);
-     printf("\nCalling delete() on element in index %d in A.", index(A));
+     printf("\nCalling delete() on element in index %d in A.", cursorIndex(A));
      delete(A);
      printf("\nA is: ");
      printList(stdout, A);

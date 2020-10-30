@@ -128,7 +128,7 @@ int compare(BigInteger A, BigInteger B) {
                         moveBack(A->magnitude);
                         moveBack(B->magnitude);
                         
-                        while (index(A->magnitude) >= 0) {
+                        while (cursorIndex(A->magnitude) >= 0) {
                             if (get(A->magnitude) > get(B->magnitude)) {
                                 // A > B
                                 returnVal = 1;
@@ -158,7 +158,7 @@ int compare(BigInteger A, BigInteger B) {
                         
                         // traverse the lists from MSD (back) to LSD (front)
                         // the first digit to be larger is the larger number
-                        while (index(A->magnitude) >= 0) {
+                        while (cursorIndex(A->magnitude) >= 0) {
                             if (get(A->magnitude) > get(B->magnitude)) {
                                 // A < B
                                 returnVal = -1;
@@ -195,7 +195,7 @@ int equals(BigInteger A, BigInteger B) {
             // check to see if all elements match up (are equal)
             moveBack(A->magnitude);
             moveBack(B->magnitude);
-            while(index(A->magnitude) >= 0) {
+            while(cursorIndex(A->magnitude) >= 0) {
                 // A and B magnitudes are the same length
                 // so if A finished traversing, B has also finished
                 if (get(A->magnitude) != get(B->magnitude)) {
@@ -377,7 +377,7 @@ BigInteger copy(BigInteger N) {
     // save values from N to copyN
     
     moveFront(N->magnitude);
-    while(index(N->magnitude) >= 0) {
+    while(cursorIndex(N->magnitude) >= 0) {
         append(copyN->magnitude, get(N->magnitude)); // save curr data into copyN
         moveNext(N->magnitude);
     }
@@ -433,12 +433,12 @@ BigInteger sum(BigInteger A, BigInteger B) {
     
     long sum = 0; // the addition of A and B's corresponding elements
     
-    while(index(A->magnitude) >= 0 || index(B->magnitude) >= 0) {
+    while(cursorIndex(A->magnitude) >= 0 || cursorIndex(B->magnitude) >= 0) {
         // if one list1 is longer than the other, it is as if adding (elem1 + 0)
-        if (index(A->magnitude) >= 0) { // if A's cursor is defined
+        if (cursorIndex(A->magnitude) >= 0) { // if A's cursor is defined
             sum += sign(A) * get(A->magnitude);
         }
-        if (index(B->magnitude) >= 0) { // if B's cursor is defined
+        if (cursorIndex(B->magnitude) >= 0) { // if B's cursor is defined
             sum += sign(B) * get(B->magnitude);
         }
         
@@ -447,11 +447,11 @@ BigInteger sum(BigInteger A, BigInteger B) {
         
         sum = 0;
         
-        if (index(A->magnitude) >= 0) { // if A still has more elements
+        if (cursorIndex(A->magnitude) >= 0) { // if A still has more elements
             moveNext(A->magnitude);
         }
         
-        if (index(B->magnitude) >= 0) { // if B still has more elements
+        if (cursorIndex(B->magnitude) >= 0) { // if B still has more elements
             moveNext(B->magnitude);
         }
     }
@@ -507,12 +507,12 @@ BigInteger diff(BigInteger A, BigInteger B) {
     
     long diff = 0; // the addition of A and B's corresponding elements
     
-    while(index(A->magnitude) >= 0 || index(B->magnitude) >= 0) {
+    while(cursorIndex(A->magnitude) >= 0 || cursorIndex(B->magnitude) >= 0) {
         // if one list1 is longer than the other, it is as if adding (elem1 + 0)
-        if (index(A->magnitude) >= 0) { // if A's cursor is defined
+        if (cursorIndex(A->magnitude) >= 0) { // if A's cursor is defined
             diff += sign(A) * get(A->magnitude);
         }
-        if (index(B->magnitude) >= 0) { // if B's cursor is defined
+        if (cursorIndex(B->magnitude) >= 0) { // if B's cursor is defined
             diff -= sign(B) * get(B->magnitude);
         }
         
@@ -521,11 +521,11 @@ BigInteger diff(BigInteger A, BigInteger B) {
         
         diff = 0;
         
-        if (index(A->magnitude) >= 0) { // if A still has more elements
+        if (cursorIndex(A->magnitude) >= 0) { // if A still has more elements
             moveNext(A->magnitude);
         }
         
-        if (index(B->magnitude) >= 0) { // if B still has more elements
+        if (cursorIndex(B->magnitude) >= 0) { // if B still has more elements
             moveNext(B->magnitude);
         }
     }
@@ -604,7 +604,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
                             // for 1st row of multiplication, shift is 1 and so on
     
     moveFront(B->magnitude);
-    while(index(B->magnitude) >= 0) {
+    while(cursorIndex(B->magnitude) >= 0) {
         makeZero(temp); // start with an empty list to hold multiplication results
         temp->sign = 1;
         
@@ -619,7 +619,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
         long curr_B_elem = get(B->magnitude);
         
         moveFront(A->magnitude);
-        while(index(A->magnitude) >= 0) {
+        while(cursorIndex(A->magnitude) >= 0) {
             long curr_A_elem = get(A->magnitude);
             
             product = curr_B_elem * curr_A_elem;
@@ -674,7 +674,7 @@ void normalize(BigInteger B) {
     if (back(B->magnitude) < 0) {
         B->sign = -1;
         moveBack(B->magnitude);
-        while(index(B->magnitude) >= 0) {
+        while(cursorIndex(B->magnitude) >= 0) {
             set(B->magnitude, -1*get(B->magnitude));
             movePrev(B->magnitude);
         }
@@ -688,7 +688,7 @@ void normalize(BigInteger B) {
     long carry = 0; // will hold the value carried over to the next larger power elem
     
     moveFront(B->magnitude);
-    while(index(B->magnitude) >= 0) { // while the cursor is defined
+    while(cursorIndex(B->magnitude) >= 0) { // while the cursor is defined
         
         // if the element does not fall in the range 0 - (base-1)
         // then it must be normalized
@@ -730,7 +730,7 @@ void normalize(BigInteger B) {
             // if currElem is the MSD
             // and there is a positive carry left over
             // the positive carry is placed as the new MSD
-            if (index(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
+            if (cursorIndex(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
                 if (carry > 0) { // if positive carry is left
                     append(B->magnitude, carry); // place a carry as the new MSD
                     carry = 0; // set carry to 0 since we used the carry
@@ -759,7 +759,7 @@ void deleteLeadingZeros(BigInteger B) {
     
     // start at MSD place in B's magnitude
     moveBack(B->magnitude);
-    while (index(B->magnitude) >= 0) {
+    while (cursorIndex(B->magnitude) >= 0) {
         long elem = get(B->magnitude);
         if (elem == 0) {
             delete(B->magnitude); // deletes the current cursor elem
@@ -798,9 +798,9 @@ void printBigInteger(FILE* out, BigInteger N) {
     moveBack(N->magnitude);
     
     // print MSD to LSD - print back to front
-    while(index(N->magnitude) >= 0) {
+    while(cursorIndex(N->magnitude) >= 0) {
         long data = get(N->magnitude);
-        if (index(N->magnitude) == length(N->magnitude)-1) { // if we are at MSD
+        if (cursorIndex(N->magnitude) == length(N->magnitude)-1) { // if we are at MSD
             // don't print a leading zero
             fprintf(out, "%ld", data);
             movePrev(N->magnitude);
