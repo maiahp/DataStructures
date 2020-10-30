@@ -14,6 +14,7 @@
 int main(int argc, const char * argv[]) {
     FILE *in, *out;
     
+    /*
     if ( argc != 3 ) {
         fprintf(stderr, "Usage: %s <input file> <outputfile>\n", argv[0]);
         exit(1);
@@ -29,7 +30,7 @@ int main(int argc, const char * argv[]) {
         printf("Unable to open file %s for writing\n", argv[2]);
         exit(1);
     }
-    
+    */
     
     // hardcoding the filename (testing):
     in = fopen("in1.txt", "r");

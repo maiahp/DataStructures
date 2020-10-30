@@ -432,7 +432,7 @@ BigInteger sum(BigInteger A, BigInteger B) {
     S->sign = 1; // set sign as 1, will re-evaluate in normalize
     
     moveFront(A->magnitude);
-    moveFront(B->magnitude);
+    moveFront(copyB->magnitude);
     
     long sum = 0; // the addition of A and B's corresponding elements
     
@@ -455,7 +455,7 @@ BigInteger sum(BigInteger A, BigInteger B) {
         }
         
         if (cursorIndex(copyB->magnitude) >= 0) { // if B still has more elements
-            moveNext(B->magnitude);
+            moveNext(copyB->magnitude);
         }
     }
     
@@ -591,8 +591,8 @@ BigInteger prod(BigInteger A, BigInteger B) {
                             // for 0th row of multiplication, shift is 0
                             // for 1st row of multiplication, shift is 1 and so on
     
-    moveFront(B->magnitude);
-    while(cursorIndex(B->magnitude) >= 0) {
+    moveFront(copyB->magnitude);
+    while(cursorIndex(copyB->magnitude) >= 0) {
         makeZero(temp); // start with an empty list to hold multiplication results
         temp->sign = 1;
         
@@ -604,7 +604,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
             i++;
         }
         
-        long curr_B_elem = get(B->magnitude);
+        long curr_B_elem = get(copyB->magnitude);
         
         moveFront(A->magnitude);
         while(cursorIndex(A->magnitude) >= 0) {
@@ -625,7 +625,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
         // add a zero to the LSD place (front of list) of B
         shiftCount++;
 
-        moveNext(B->magnitude);
+        moveNext(copyB->magnitude);
     }
     
     // the sign of the result P cannot be evaluated properly before add() (and normalize(), which is called inside of add()) because these two methods change the sign
