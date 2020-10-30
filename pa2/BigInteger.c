@@ -557,7 +557,17 @@ BigInteger prod(BigInteger A, BigInteger B) {
         exit(EXIT_FAILURE);
     }
     
+    BigInteger P = newBigInteger();
+    P->sign = 1;
+    
+    // the case where A or B is 0
+    if (length(A->magnitude) == 0 || length(B->magnitude) == 0) { // if either A or B is 0
+        makeZero(P);
+        return P; // return 0
+    }
+    
     BigInteger copyB = copy(B); // incase A = B (they are the same reference)
+
     
     // note:
     /*
@@ -581,8 +591,6 @@ BigInteger prod(BigInteger A, BigInteger B) {
      
      */
     
-    BigInteger P = newBigInteger();
-    P->sign = 1;
     
     BigInteger temp = newBigInteger(); // must be freed after use
     long product = 0;
