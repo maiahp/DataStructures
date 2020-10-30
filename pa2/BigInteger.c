@@ -72,6 +72,11 @@ int compare(BigInteger A, BigInteger B) {
         exit(EXIT_FAILURE);
     }
     
+    // in case that A = B (they are the same reference)
+    if (A == B) {
+        return 0;
+    }
+    
     int returnVal = 0;
     
     if (equals(A, B) == 1) { // catches the case if A and B are both 0
@@ -187,6 +192,11 @@ int equals(BigInteger A, BigInteger B) {
         exit(EXIT_FAILURE);
     }
     // note: the case where a sign is 0 will still work
+    
+    // case: A is the same reference as B (A = B)
+    if (A == B) {
+        return 1;
+    }
     
     int isEqual = 1;
     
@@ -395,7 +405,6 @@ void add(BigInteger S, BigInteger A, BigInteger B) {
   
     BigInteger temp = sum(A, B);
     S->sign = sign(temp);
-    
     freeList(&(S->magnitude)); // delete S's list
     S->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
     freeBigInteger(&temp);
@@ -414,16 +423,10 @@ BigInteger sum(BigInteger A, BigInteger B) {
      if A is the same Big Integer as B
      then it is the same reference, and whenever anything happens with A's cursor
      it will also move B's cursor, since A = B
-     So A must be made into a copy
-     So that we can use A and B = copyA
+     So one must be copied
      */
     
-    int A_equals_B = 0;
-    if (A == B) { // A is the same reference as B
-        A_equals_B = 1;
-        B = copy(A); // copy returns a new BigInteger (must be freed later)
-                     // B now points to a copy of A (not A itself)
-    }
+    BigInteger copyB = copy(B);
     
     BigInteger S = newBigInteger(); // S is the sum of A + B
     S->sign = 1; // set sign as 1, will re-evaluate in normalize
@@ -433,13 +436,13 @@ BigInteger sum(BigInteger A, BigInteger B) {
     
     long sum = 0; // the addition of A and B's corresponding elements
     
-    while(cursorIndex(A->magnitude) >= 0 || cursorIndex(B->magnitude) >= 0) {
+    while(cursorIndex(A->magnitude) >= 0 || cursorIndex(copyB->magnitude) >= 0) {
         // if one list1 is longer than the other, it is as if adding (elem1 + 0)
         if (cursorIndex(A->magnitude) >= 0) { // if A's cursor is defined
             sum += sign(A) * get(A->magnitude);
         }
-        if (cursorIndex(B->magnitude) >= 0) { // if B's cursor is defined
-            sum += sign(B) * get(B->magnitude);
+        if (cursorIndex(copyB->magnitude) >= 0) { // if B's cursor is defined
+            sum += sign(copyB) * get(copyB->magnitude);
         }
         
         // add result to S magnitude list
@@ -451,15 +454,13 @@ BigInteger sum(BigInteger A, BigInteger B) {
             moveNext(A->magnitude);
         }
         
-        if (cursorIndex(B->magnitude) >= 0) { // if B still has more elements
+        if (cursorIndex(copyB->magnitude) >= 0) { // if B still has more elements
             moveNext(B->magnitude);
         }
     }
     
-    if (A_equals_B == 1) { // if A and B were the same reference
-        freeBigInteger(&B); // delete the copy's data
-        B = A; // return B's value to its initial value, which is A
-    }
+    // delete the copy's data
+    freeBigInteger(&copyB);
     
     //printBigInteger(stdout, S);
     normalize(S);
@@ -477,7 +478,6 @@ void subtract(BigInteger D, BigInteger A, BigInteger B) {
 
     BigInteger temp = diff(A, B);
     D->sign = sign(temp);
-    
     freeList(&(D->magnitude)); // delete D's list
     D->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
     freeBigInteger(&temp);
@@ -492,28 +492,24 @@ BigInteger diff(BigInteger A, BigInteger B) {
         exit(EXIT_FAILURE);
     }
     
-    int A_equals_B = 0;
-    if (A == B) { // A is the same reference as B
-        A_equals_B = 1;
-        B = copy(A); // copy returns a new BigInteger (must be freed later)
-                     // B now points to a copy of A (not A itself)
-    }
+    // incase A = B (A is the same reference as B)
+    BigInteger copyB = copy(B);
     
     BigInteger D = newBigInteger();
     D->sign = 1; // set sign as 1, will re-evaluate in normalize
     
     moveFront(A->magnitude);
-    moveFront(B->magnitude);
+    moveFront(copyB->magnitude);
     
     long diff = 0; // the addition of A and B's corresponding elements
     
-    while(cursorIndex(A->magnitude) >= 0 || cursorIndex(B->magnitude) >= 0) {
+    while(cursorIndex(A->magnitude) >= 0 || cursorIndex(copyB->magnitude) >= 0) {
         // if one list1 is longer than the other, it is as if adding (elem1 + 0)
         if (cursorIndex(A->magnitude) >= 0) { // if A's cursor is defined
             diff += sign(A) * get(A->magnitude);
         }
-        if (cursorIndex(B->magnitude) >= 0) { // if B's cursor is defined
-            diff -= sign(B) * get(B->magnitude);
+        if (cursorIndex(copyB->magnitude) >= 0) { // if B's cursor is defined
+            diff -= sign(copyB) * get(copyB->magnitude);
         }
         
         // add result to S magnitude list
@@ -525,15 +521,13 @@ BigInteger diff(BigInteger A, BigInteger B) {
             moveNext(A->magnitude);
         }
         
-        if (cursorIndex(B->magnitude) >= 0) { // if B still has more elements
-            moveNext(B->magnitude);
+        if (cursorIndex(copyB->magnitude) >= 0) { // if B still has more elements
+            moveNext(copyB->magnitude);
         }
     }
     
-    if (A_equals_B == 1) { // if A and B were the same reference
-        freeBigInteger(&B); // delete the copy's data
-        B = A; // return B's value to its initial value, which is A
-    }
+    // delete the copy
+    freeBigInteger(&copyB);
     
     normalize(D);
     return D;
@@ -550,7 +544,6 @@ void multiply(BigInteger P, BigInteger A, BigInteger B) {
     
     BigInteger temp = prod(A, B);
     P->sign = sign(temp);
-    
     freeList(&(P->magnitude)); // delete P's list
     P->magnitude = copyList(temp->magnitude); // must create a copy or when we free temp, this list will be null
     freeBigInteger(&temp);
@@ -564,12 +557,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
         exit(EXIT_FAILURE);
     }
     
-    int A_equals_B = 0;
-    if (A == B) { // A is the same reference as B
-        A_equals_B = 1;
-        B = copy(A); // copy returns a new BigInteger (must be freed later)
-                     // B now points to a copy of A (not A itself)
-    }
+    BigInteger copyB = copy(B); // incase A = B (they are the same reference)
     
     // note:
     /*
@@ -640,20 +628,15 @@ BigInteger prod(BigInteger A, BigInteger B) {
         moveNext(B->magnitude);
     }
     
-    
-    if (A_equals_B == 1) { // if A and B were the same reference
-        freeBigInteger(&B); // delete the copy's data
-        B = A; // return B's value to its initial value, which is A
-    }
-    
     // the sign of the result P cannot be evaluated properly before add() (and normalize(), which is called inside of add()) because these two methods change the sign
     // sign must be evaluated before P is returned
-    if (sign(A) != sign(B)) { // if signs are not the same, the result is always negative
+    if (sign(A) != sign(copyB)) { // if signs are not the same, the result is always negative
         P->sign = -1;
     } else { // if signs are the same, regardless of sign, the result is always positive
         P->sign = 1;
     }
     
+    freeBigInteger(&copyB);
     freeBigInteger(&temp);
     
     return P;
@@ -714,7 +697,6 @@ void normalize(BigInteger B) {
             else if (currElem < 0) { // element is too small
                 // add BASE
                 // subtract the carry from the next larger element
-                
                 carry = (currElem/BASE) - 1;
                 
                 long addToCurrElem = carry * BASE; // the amount to add to currElem

@@ -10,6 +10,7 @@
 //#include <string.h>
 #include "BigInteger.h"
 
+
 int main(int argc, const char * argv[]) {
     FILE *in, *out;
     
@@ -29,7 +30,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     
-    /*
+    
     // hardcoding the filename (testing):
     in = fopen("in1.txt", "r");
     if(in==NULL) {
@@ -42,7 +43,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     // end (testing)
-     */
+     
     
     int strSize1, strSize2;
     char *bigIntStr1, *bigIntStr2;
@@ -157,3 +158,4 @@ int main(int argc, const char * argv[]) {
     fclose(out);
     return 0;
 }
+
