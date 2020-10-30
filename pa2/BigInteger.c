@@ -137,9 +137,11 @@ int compare(BigInteger A, BigInteger B) {
                             if (get(A->magnitude) > get(B->magnitude)) {
                                 // A > B
                                 returnVal = 1;
+                                break;
                             } else if (get(A->magnitude) < get(B->magnitude)) {
                                 // A < B
                                 returnVal = -1;
+                                break;
                             } else {
                                 // the digits are equal, move to next element
                                 movePrev(A->magnitude);
@@ -167,9 +169,11 @@ int compare(BigInteger A, BigInteger B) {
                             if (get(A->magnitude) > get(B->magnitude)) {
                                 // A < B
                                 returnVal = -1;
+                                break;
                             } else if (get(A->magnitude) < get(B->magnitude)) {
                                 // A > B
                                 returnVal = 1;
+                                break;
                             } else {
                                 // the digits are equal, move to next element
                                 movePrev(A->magnitude);
