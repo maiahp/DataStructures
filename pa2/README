@@ -37,5 +37,5 @@ Makefile  -  provided by the Professor. Compiles the source code.
 
 
 Note to grader: 
-My List ADT was throwing a lot of errors because of the name of the function "index". I did not get these errors in pa1. I had to change "index()" to "cursorIndex()" in order for BigInteger to run.
+My List ADT was throwing a lot of errors because of the name of the function "index". I did not get these errors in pa1. I had to change the name of the function "index()" to "cursorIndex()" in order for BigInteger to run.
 

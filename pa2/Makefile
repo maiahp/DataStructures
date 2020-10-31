@@ -17,10 +17,10 @@ ADT1_HEADER    = $(ADT1).h
 ADT2_SOURCE    = $(ADT2).c
 ADT2_OBJECT    = $(ADT2).o
 ADT2_HEADER    = $(ADT2).h
-COMPILE        = gcc -c -g -std=c11 -Wall
+COMPILE        = gcc -c -std=c11 -Wall
 LINK           = gcc -o
 REMOVE         = rm -f
-MEMCHECK       = valgrind -g --leak-check=full
+MEMCHECK       = valgrind --leak-check=full
 
 $(CLIENT) : $(OBJECT) $(ADT1_OBJECT) $(ADT2_OBJECT)
 	$(LINK) $(CLIENT) $(OBJECT) $(ADT1_OBJECT) $(ADT2_OBJECT)

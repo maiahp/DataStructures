@@ -133,7 +133,7 @@ int compare(BigInteger A, BigInteger B) {
                         moveBack(A->magnitude);
                         moveBack(B->magnitude);
                         
-                        while (cursorIndex(A->magnitude) >= 0) {
+                        while (index(A->magnitude) >= 0) {
                             if (get(A->magnitude) > get(B->magnitude)) {
                                 // A > B
                                 returnVal = 1;
@@ -165,7 +165,7 @@ int compare(BigInteger A, BigInteger B) {
                         
                         // traverse the lists from MSD (back) to LSD (front)
                         // the first digit to be larger is the larger number
-                        while (cursorIndex(A->magnitude) >= 0) {
+                        while (index(A->magnitude) >= 0) {
                             if (get(A->magnitude) > get(B->magnitude)) {
                                 // A < B
                                 returnVal = -1;
@@ -209,7 +209,7 @@ int equals(BigInteger A, BigInteger B) {
             // check to see if all elements match up (are equal)
             moveBack(A->magnitude);
             moveBack(B->magnitude);
-            while(cursorIndex(A->magnitude) >= 0) {
+            while(index(A->magnitude) >= 0) {
                 // A and B magnitudes are the same length
                 // so if A finished traversing, B has also finished
                 if (get(A->magnitude) != get(B->magnitude)) {
@@ -375,6 +375,9 @@ BigInteger stringToBigInteger(char* s) {
             
         }
     
+    // check to see if the number is 0
+    deleteLeadingZeros(B);
+    
     return B;
 }
 
@@ -391,7 +394,7 @@ BigInteger copy(BigInteger N) {
     // save values from N to copyN
     
     moveFront(N->magnitude);
-    while(cursorIndex(N->magnitude) >= 0) {
+    while(index(N->magnitude) >= 0) {
         append(copyN->magnitude, get(N->magnitude)); // save curr data into copyN
         moveNext(N->magnitude);
     }
@@ -440,12 +443,12 @@ BigInteger sum(BigInteger A, BigInteger B) {
     
     long sum = 0; // the addition of A and B's corresponding elements
     
-    while(cursorIndex(A->magnitude) >= 0 || cursorIndex(copyB->magnitude) >= 0) {
+    while(index(A->magnitude) >= 0 || index(copyB->magnitude) >= 0) {
         // if one list1 is longer than the other, it is as if adding (elem1 + 0)
-        if (cursorIndex(A->magnitude) >= 0) { // if A's cursor is defined
+        if (index(A->magnitude) >= 0) { // if A's cursor is defined
             sum += sign(A) * get(A->magnitude);
         }
-        if (cursorIndex(copyB->magnitude) >= 0) { // if B's cursor is defined
+        if (index(copyB->magnitude) >= 0) { // if B's cursor is defined
             sum += sign(copyB) * get(copyB->magnitude);
         }
         
@@ -454,11 +457,11 @@ BigInteger sum(BigInteger A, BigInteger B) {
         
         sum = 0;
         
-        if (cursorIndex(A->magnitude) >= 0) { // if A still has more elements
+        if (index(A->magnitude) >= 0) { // if A still has more elements
             moveNext(A->magnitude);
         }
         
-        if (cursorIndex(copyB->magnitude) >= 0) { // if B still has more elements
+        if (index(copyB->magnitude) >= 0) { // if B still has more elements
             moveNext(copyB->magnitude);
         }
     }
@@ -507,12 +510,12 @@ BigInteger diff(BigInteger A, BigInteger B) {
     
     long diff = 0; // the addition of A and B's corresponding elements
     
-    while(cursorIndex(A->magnitude) >= 0 || cursorIndex(copyB->magnitude) >= 0) {
+    while(index(A->magnitude) >= 0 || index(copyB->magnitude) >= 0) {
         // if one list1 is longer than the other, it is as if adding (elem1 + 0)
-        if (cursorIndex(A->magnitude) >= 0) { // if A's cursor is defined
+        if (index(A->magnitude) >= 0) { // if A's cursor is defined
             diff += sign(A) * get(A->magnitude);
         }
-        if (cursorIndex(copyB->magnitude) >= 0) { // if B's cursor is defined
+        if (index(copyB->magnitude) >= 0) { // if B's cursor is defined
             diff -= sign(copyB) * get(copyB->magnitude);
         }
         
@@ -521,11 +524,11 @@ BigInteger diff(BigInteger A, BigInteger B) {
         
         diff = 0;
         
-        if (cursorIndex(A->magnitude) >= 0) { // if A still has more elements
+        if (index(A->magnitude) >= 0) { // if A still has more elements
             moveNext(A->magnitude);
         }
         
-        if (cursorIndex(copyB->magnitude) >= 0) { // if B still has more elements
+        if (index(copyB->magnitude) >= 0) { // if B still has more elements
             moveNext(copyB->magnitude);
         }
     }
@@ -584,7 +587,8 @@ BigInteger prod(BigInteger A, BigInteger B) {
            B1A1  B1A2   B1A3     0
      0*A1  0*A2   0*A3     0     0
      
-     ^ add up the result after each row of multiplication
+     normalize then add up the result after each row of multiplication and normalize again
+     (add fcn calls normalize)
      
      the lists look like (LSD)(front) ----- (MSD)(back)
      - so iteration goes from front to back for both
@@ -604,7 +608,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
                             // for 1st row of multiplication, shift is 1 and so on
     
     moveFront(copyB->magnitude);
-    while(cursorIndex(copyB->magnitude) >= 0) {
+    while(index(copyB->magnitude) >= 0) {
         makeZero(temp); // start with an empty list to hold multiplication results
         temp->sign = 1;
         
@@ -619,7 +623,7 @@ BigInteger prod(BigInteger A, BigInteger B) {
         long curr_B_elem = get(copyB->magnitude);
         
         moveFront(A->magnitude);
-        while(cursorIndex(A->magnitude) >= 0) {
+        while(index(A->magnitude) >= 0) {
             long curr_A_elem = get(A->magnitude);
             
             product = curr_B_elem * curr_A_elem;
@@ -669,7 +673,7 @@ void normalize(BigInteger B) {
     if (back(B->magnitude) < 0) {
         B->sign = -1;
         moveBack(B->magnitude);
-        while(cursorIndex(B->magnitude) >= 0) {
+        while(index(B->magnitude) >= 0) {
             set(B->magnitude, -1*get(B->magnitude));
             movePrev(B->magnitude);
         }
@@ -683,7 +687,7 @@ void normalize(BigInteger B) {
     long carry = 0; // will hold the value carried over to the next larger power elem
     
     moveFront(B->magnitude);
-    while(cursorIndex(B->magnitude) >= 0) { // while the cursor is defined
+    while(index(B->magnitude) >= 0) { // while the cursor is defined
         
         // if the element does not fall in the range 0 - (base-1)
         // then it must be normalized
@@ -724,7 +728,7 @@ void normalize(BigInteger B) {
             // if currElem is the MSD
             // and there is a positive carry left over
             // the positive carry is placed as the new MSD
-            if (cursorIndex(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
+            if (index(B->magnitude) == length(B->magnitude)-1) { // if curr Elem is back of the list, it is MSD
                 if (carry > 0) { // if positive carry is left
                     append(B->magnitude, carry); // place a carry as the new MSD
                     carry = 0; // set carry to 0 since we used the carry
@@ -753,7 +757,7 @@ void deleteLeadingZeros(BigInteger B) {
     
     // start at MSD place in B's magnitude
     moveBack(B->magnitude);
-    while (cursorIndex(B->magnitude) >= 0) {
+    while (index(B->magnitude) >= 0) {
         long elem = get(B->magnitude);
         if (elem == 0) {
             delete(B->magnitude); // deletes the current cursor elem
@@ -792,9 +796,9 @@ void printBigInteger(FILE* out, BigInteger N) {
     moveBack(N->magnitude);
     
     // print MSD to LSD - print back to front
-    while(cursorIndex(N->magnitude) >= 0) {
+    while(index(N->magnitude) >= 0) {
         long data = get(N->magnitude);
-        if (cursorIndex(N->magnitude) == length(N->magnitude)-1) { // if we are at MSD
+        if (index(N->magnitude) == length(N->magnitude)-1) { // if we are at MSD
             // don't print a leading zero
             fprintf(out, "%ld", data);
             movePrev(N->magnitude);

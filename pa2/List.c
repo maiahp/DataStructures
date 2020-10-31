@@ -90,7 +90,7 @@ int length(List L) {
 
 // index()
 // Returns index of cursor element if defined, -1 otherwise.
-int cursorIndex(List L) {
+int index(List L) {
     if (L == NULL) {
         fprintf(stderr, "List Error: calling index() on NULL List reference\n");
         exit(EXIT_FAILURE);
@@ -137,7 +137,7 @@ LIST_ELEMENT get(List L) {
         fprintf(stderr, "List Error: calling get() on empty List\n");
         exit(EXIT_FAILURE);
     }
-    if (cursorIndex(L) == -1) { // pre condition: cursor is defined
+    if (index(L) == -1) { // pre condition: cursor is defined
         fprintf(stderr, "List Error: calling get() on List with undefined cursor\n");
         exit(EXIT_FAILURE);
     }
@@ -294,12 +294,12 @@ void insertBefore(List L, LIST_ELEMENT data) {
         fprintf(stderr, "List Error: calling insertBefore() on empty List\n");
         exit(EXIT_FAILURE);
     }
-    if (cursorIndex(L) == -1) { // pre condition: cursor is defined
+    if (index(L) == -1) { // pre condition: cursor is defined
         fprintf(stderr, "List Error: calling insertBefore() when cursor is undefined\n");
         exit(EXIT_FAILURE);
     }
 
-    if (cursorIndex(L) == 0) { // cursor is at front of list
+    if (index(L) == 0) { // cursor is at front of list
         prepend(L, data); // new node will be the front of the list
     } else { // cursor is at some other place in list
         Node nodeToInsert = newNode(data);
@@ -329,12 +329,12 @@ void insertAfter(List L, LIST_ELEMENT data) {
         fprintf(stderr, "List Error: calling insertAfter() on empty List\n");
         exit(EXIT_FAILURE);
     }
-    if (cursorIndex(L) == -1) { // pre condition: cursor is defined
+    if (index(L) == -1) { // pre condition: cursor is defined
         fprintf(stderr, "List Error: calling insertAfter() when cursor is undefined\n");
         exit(EXIT_FAILURE);
     }
     
-    if (cursorIndex(L) == length(L)-1) { // if cursor is at the back of the list
+    if (index(L) == length(L)-1) { // if cursor is at the back of the list
         append(L, data); // add to the back
     } else { // cursor is at some other place in list
         Node nodeToInsert = newNode(data);
@@ -436,7 +436,7 @@ void delete(List L) {
         fprintf(stderr, "List Error: calling delete() on empty List\n");
         exit(EXIT_FAILURE);
     }
-    if (cursorIndex(L) == -1) { // pre condition: cursor is defined
+    if (index(L) == -1) { // pre condition: cursor is defined
         fprintf(stderr, "List Error: calling delete() on List with undefined cursor\n");
         exit(EXIT_FAILURE);
     }
@@ -484,7 +484,7 @@ void set(List L, LIST_ELEMENT x) {
         fprintf(stderr, "List Error: calling delete() on empty List\n");
         exit(EXIT_FAILURE);
     }
-    if (cursorIndex(L) == -1) { // pre condition: cursor is defined
+    if (index(L) == -1) { // pre condition: cursor is defined
         fprintf(stderr, "List Error: calling delete() on List with undefined cursor\n");
         exit(EXIT_FAILURE);
     }
