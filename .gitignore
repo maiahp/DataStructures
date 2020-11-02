@@ -20,6 +20,7 @@ a.out
 *.swo
 *~
 *.xcodeproj
+*.xcworkspace
 
 
 # Other
@@ -33,4 +34,4 @@ a.out
 *.dll
 .DS_Store
 *.txt
-*.xcworkspace
+
