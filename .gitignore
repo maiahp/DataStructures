@@ -33,3 +33,4 @@ a.out
 *.dll
 .DS_Store
 *.txt
+*.xcworkspace
