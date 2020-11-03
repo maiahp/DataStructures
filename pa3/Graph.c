@@ -9,7 +9,7 @@
 #include "Graph.h"
 
 // prototypes --------------------------------------------------------------------------
-
+void insertAndSortNeighbor(Graph G, int u, int v);
 
 // structs -----------------------------------------------------------------------------
 
@@ -201,9 +201,20 @@ void getPath(List L, Graph G, int u) {
         exit(EXIT_FAILURE);
     }
     
+    int source = G->mostRecentSource;
     
-    // do something
-    
+    // if u is the source, then the list contains just the source
+    if (u == source) {
+        append(L, source);
+    } else if (G->parent[u] == NIL) {
+        // if the parent of u is NIL
+        // then there is no path from source to u
+        append(L, NIL);
+    } else {
+        // there exists a path between the source and u
+        getPath(L, G, G->parent[u]); // recursive call with u's parent
+        append(L, u); // add vertices to List from the source down to u
+    }
 }
 
 
@@ -223,7 +234,7 @@ void makeNull(Graph G) {
     // all parents are NIL
     // all distances are INF
     
-    for (int i=0; i < G->order; i++) {
+    for (int i=0; i < G->order+1; i++) {
         if (i == 0) { // index 0, there is no List or elements defined
             G->neighbors[0] = NULL;
         } else { // for all other indices (vertices)
@@ -256,76 +267,14 @@ void addEdge(Graph G, int u, int v) {
     // an undirected edge is added from u to v
     // so v is added to u's neighbors list and u is added to v's in sorted order (smallest to largest)
     
-    // add v to u's neighbors list
-    List uNeighbors = G->neighbors[u];
+    // v is added to u's neighbors list
+    insertAndSortNeighbor(G, u, v);
     
-    if (length(uNeighbors) == 0) { // uNeighbors is empty
-        append(uNeighbors, v); // append the first neighbor
-        
-    } else { // if uNeighbors has other elements in it
-        moveFront(uNeighbors);
-        
-        int isDuplicate = 0; // duplicate flag
-        int hasInserted = 0; // elemenent has been inserted into list flag
-        
-        while(index(uNeighbors) >= 0) {
-            int currElem = get(uNeighbors);
-            if (v > currElem) { // v is bigger than currElem
-                moveNext(uNeighbors); // move to next element
-                
-            } else if (v < currElem) { // v is smaller than currElem
-                insertBefore(uNeighbors, v); // insert v before currElem
-                hasInserted = 1;
-                break;
-                
-            } else if (currElem == v) { // if v is equal to a current elem
-                isDuplicate = 1; // do nothing, there should be no duplicate directed edges
-                break;
-            }
-        }
-        // if while exits and v is not a duplicate element in uNeighbors List
-        // add v to the back of the list, it is the largest element
-        
-        if (isDuplicate == 0 && hasInserted == 0) {
-            append(uNeighbors, v);
-        }
-    }
+    // u is added to v's neighbors list
+    insertAndSortNeighbor(G, v, u);
     
-    
-    // Now add u to v's neighbors list
-    List vNeighbors = G->neighbors[v];
-    
-    if (length(vNeighbors) == 0) { // vNeighbors is empty
-        append(vNeighbors, u); // append the first element
-        
-    } else { // vNeighbors has other elements in it
-        moveFront(vNeighbors);
-         
-        int isDuplicate = 0; // duplicate element flag
-        int hasInserted = 0; // elem has been inserted flag
-        
-        while(index(vNeighbors) >= 0) {
-            int currElem = get(vNeighbors);
-            if (u > currElem) { // v is bigger than currElem
-                moveNext(vNeighbors); // move to next element
-                
-            } else if (u < currElem) { // v is smaller than currElem
-                insertBefore(vNeighbors, u); // insert v before currElem
-                hasInserted = 1;
-                break;
-                
-            } else if (currElem == u) { // if v is equal to a current elem
-                isDuplicate = 1; // do nothing, there should be no duplicate directed edges
-                break;
-            }
-        }
-        // if while exits and v is not a duplicate element in uNeighbors List
-        // add v to the back of the list, it is the largest element
-        
-        if (isDuplicate == 0 && hasInserted == 0) {
-            append(vNeighbors, u);
-        }
-    }
+    // increment the number of edges in G (size)
+    G->size++;
 }
 
 // addArc()
@@ -348,39 +297,20 @@ void addArc(Graph G, int u, int v) {
 
     // a directed edge is added from u to v
     // so v is added to u's neighbors list in sorted order (smallest to largest)
+    insertAndSortNeighbor(G, u, v);
     
-    List uNeighbors = G->neighbors[u];
-    
-    if (length(uNeighbors) == 0) { // no other elems in uNeighbors
-        append(uNeighbors, v);
-        
-    } else { // there are other elems in uNeighbors
-        moveFront(uNeighbors);
-        
-        int isDuplicate = 0;
-        int hasInserted = 0;
-        
-        while(index(uNeighbors) >= 0) {
-            int currElem = get(uNeighbors);
-            if (v > currElem) { // v is bigger than currElem
-                moveNext(uNeighbors); // move to next element
-                
-            } else if (v < currElem) { // v is smaller than currElem
-                insertBefore(uNeighbors, v); // insert v before currElem
-                hasInserted = 1;
-                break;
-                
-            } else if (currElem == v) { // if v is equal to a current elem
-                isDuplicate = 1; // do nothing, there should be no duplicate directed edges
-                break;
-            }
+    // don't increment size of G unless a directed edge exists from u to v AND from v to u
+    // size is the number of edges in G
+    // an edge is an undirected line between two vertices and an arc is a directed edge
+    List vNeighbors = G->neighbors[v];
+    moveFront(vNeighbors);
+    while(index(vNeighbors) >= 0) {
+        int currVertex = get(vNeighbors);
+        if (currVertex == u) { // if u exists in v's neighbors list
+            G->size++; // increment the number of edges in G
+            break;
         }
-        // if while exits and v is not a duplicate element in uNeighbors List
-        // add v to the back of the list, it is the largest element
-        
-        if (isDuplicate == 0 && hasInserted == 0) {
-            append(uNeighbors, v);
-        }
+        moveNext(vNeighbors);
     }
 }
 
@@ -489,11 +419,49 @@ void printGraph(FILE* out, Graph G) {
     }
     
     // print out the vertex and its adjacency list
-    for (int i = 0; i <= G->order; i++) {
-        if (i != 0) {
-            fprintf(out, "%d: ", i);
-            printList(out, G->neighbors[i]);
-            fprintf(out, "\n");
+    for (int i = 1; i <= G->order; i++) {
+        fprintf(out, "%d: ", i);
+        printList(out, G->neighbors[i]);
+        fprintf(out, "\n");
+    }
+}
+
+// insertAndSortNeighbor()
+// Inserts a vertex v into u's Neighbor List in sorted (least to greatest) order
+void insertAndSortNeighbor(Graph G, int u, int v) {
+    
+    // add v to u's neighbors list
+    List uNeighbors = G->neighbors[u];
+    
+    if (length(uNeighbors) == 0) { // uNeighbors is empty
+        append(uNeighbors, v); // append the first neighbor
+        
+    } else { // if uNeighbors has other elements in it
+        moveFront(uNeighbors);
+        
+        int isDuplicate = 0; // duplicate flag
+        int hasInserted = 0; // elemenent has been inserted into list flag
+        
+        while(index(uNeighbors) >= 0) {
+            int currElem = get(uNeighbors);
+            if (v > currElem) { // v is bigger than currElem
+                moveNext(uNeighbors); // move to next element
+                
+            } else if (v < currElem) { // v is smaller than currElem
+                insertBefore(uNeighbors, v); // insert v before currElem
+                hasInserted = 1;
+                break;
+                
+            } else if (currElem == v) { // if v is equal to a current elem
+                isDuplicate = 1; // do nothing, there should be no duplicate directed edges
+                break;
+            }
+        }
+        // if while exits and v is not a duplicate element in uNeighbors List
+        // add v to the back of the list, it is the largest element
+        
+        if (isDuplicate == 0 && hasInserted == 0) {
+            append(uNeighbors, v);
         }
     }
 }

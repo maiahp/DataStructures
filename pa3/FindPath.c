@@ -28,7 +28,7 @@ int main(int argc, const char * argv[]) {
         printf("Unable to open file %s for writing\n", argv[2]);
         exit(1);
     }
-   
+   */
     
     // hardcoding the filename (testing):
     in = fopen("in1.txt", "r");
@@ -42,20 +42,32 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     // end (testing)
-     */
     
-    Graph G = newGraph(5);
+    Graph G;
+    int n;
     
-    // This project consists of an undirected graph
-    // Only have to use addEdge() and not addArc() - ???
+    // First line of text file is the number of vertices n
+    fscanf(in, "%d\n", &n); // %d\n means ignore the new line character
+     
+    // Create G with n vertices
+    G = newGraph(n);
     
-    addEdge(G, 1, 5);
-    addEdge(G, 2, 3);
-    addEdge(G, 3, 2);
-    addEdge(G, 4, 5);
-    addEdge(G, 2, 1);
+    // First part of the input file, terminated by "0 0" consists of all edges in the graph
+    // Each "x y" pair is a source(x)-destination(y) pair
     
-    printGraph(stdout, G);
+    // Print out the Adjacency list of the Graph to the output file
+    
+    // Second part of the input file, terminated by "0 0" consists of "x y" source-desination pairs in range 1-n where: BFS will be called with source x, then print out the path between x and y
+    // The distance from 1 to 5 is 2
+    // A shortest 1-5 path is: 1 2 5
+    
+    // If Path DNE:
+    // The distance from 1 to 7 is infinity
+    // No 1-7 path exists
+    
 
+     
+    
+    
     
 }
