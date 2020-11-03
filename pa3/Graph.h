@@ -1,10 +1,9 @@
-//
-//  Graph.h
-//  Assignment3
-//
-//  Created by Maiah Pardo on 8/23/20.
-//  Copyright © 2020 maiah. All rights reserved.
-//
+/*
+* Maiah Pardo, mapardo
+* 2020 Fall CSE 101 PA3
+* Graph.h
+* Header file for Graph ADT
+*/
 
 #ifndef Graph_h
 #define Graph_h

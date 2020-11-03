@@ -12,8 +12,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#define LIST_ELEMENT long
-#define LIST_ELEMENT_TOSTRING "%ld"
+#define LIST_ELEMENT int
+#define LIST_ELEMENT_TOSTRING "%d"
 
 // Public Exported Type ---------------------------------------------------
 typedef struct ListObj* List;
@@ -121,7 +121,7 @@ void delete(List L);
 // set()
 // Overwrites the cursor element with x.
 // Pre: length()>0, index()>=0
-void set(List L, long x);
+void set(List L, LIST_ELEMENT x);
 
 
 // Other operations -----------------------------------------------------------

@@ -1,12 +1,15 @@
-//
-//  Graph.c
-//  
-//
-//  Created by Maiah Pardo on 11/1/20.
-//
+/*
+* Maiah Pardo, mapardo
+* 2020 Fall CSE 101 PA3
+* Graph.c
+* A Graph ADT and its associated algorithms, including a Breadth First Search Algorithm (BFS) from a given source vertex.
+*/
 
-#include "Graph.h"
 #include <stdio.h>
+#include "Graph.h"
+
+// prototypes --------------------------------------------------------------------------
+
 
 // structs -----------------------------------------------------------------------------
 
@@ -47,6 +50,12 @@ typedef struct GraphObj {
 // Creates and returns reference to a new Graph object with n vertices and no edges.
 Graph newGraph(int n) {
     
+    // n must be 1 or greater to be valid
+    if (n <= 0) {
+        fprintf(stderr, "Graph Error: calling newGraph with invalid number of vertices\n");
+        exit(EXIT_FAILURE);
+    }
+    
     Graph G = (GraphObj *)malloc(sizeof(GraphObj)); // create space for GraphObj
     
     G->order = n; // num of vertices
@@ -59,14 +68,50 @@ Graph newGraph(int n) {
     G->parent = (int *)malloc(sizeof(int)*(n+1));
     G->distance = (int *)malloc(sizeof(int)*(n+1));
     
+    // note:
+    // set all elements of G: (the 0th place is empty for all elems)
+    // each vertex's neighbors contains a new, empty list
+    // each vertex's color is white
+    // each vertex's parent is NIL
+    // each vertex's distance is INF
+    
+    for(int i=0; i < n+1; i++) {
+        if (i == 0) { // for the 0th place of all elements (there is no vertex 0)
+            G->neighbors[0] = NULL;
+            // don't set the other elements
+        } else {
+            G->neighbors[i] = newList();
+            G->color[i] = WHITE;
+            G->parent[i] = NIL;
+            G->distance[i] = INF;
+        }
+    }
+    
     return G;
-
 }
 
 // freeGraph()
 // Frees all dynamic memory associated with the Graph *pG
 // then sets the handle *pG to NULL.
-void freeGraph(Graph* pG);
+void freeGraph(Graph* pG) {
+    if (pG != NULL && *pG != NULL) {
+        
+        // free all lists in the arrays from 0 to n+1
+        for(int i=0; i < ((*pG)->order + 1); i++) {
+            freeList(&((*pG)->neighbors[i]));
+        }
+        
+        // free all arrays
+        free((*pG)->neighbors);
+        free((*pG)->color);
+        free((*pG)->parent);
+        free((*pG)->distance);
+        
+        // free the graph pointer
+        free(*pG);
+        *pG = NULL;
+    }
+}
 
 
 // Access functions -----------------------------------------------------------
@@ -115,7 +160,7 @@ int getParent(Graph G, int u) {
         fprintf(stderr, "Graph Error: calling getParent() with an invalid vertex\n");
         exit(EXIT_FAILURE);
     }
-    return G->parent; // return the parent of vertex u
+    return G->parent[u]; // return the parent of vertex u
                          // result will be NIL if BFS hasn't been called
  }
 
@@ -132,8 +177,8 @@ int getDist(Graph G, int u) {
         fprintf(stderr, "Graph Error: calling getDist() with an invalid vertex\n");
         exit(EXIT_FAILURE);
     }
-    return G->distance; // return the distance of vertex u
-                        // result will be NIL if BFS() hasn't been called or if the vertex is not reachable from the mostRecentSource
+    return G->distance[u]; // return the distance of vertex u
+                           // result will be NIL if BFS() hasn't been called or if the vertex is not reachable from the mostRecentSource
 }
 
 // getPath()
@@ -152,7 +197,7 @@ void getPath(List L, Graph G, int u) {
     // if there is no mostRecentSource
     // then BFS() has not yet been called
     if (G->mostRecentSource == NIL) {
-        printf("Graph Error: calling getPath() before BFS() has been called\n");
+        fprintf(stderr, "Graph Error: calling getPath() before BFS() has been called\n");
         exit(EXIT_FAILURE);
     }
     
@@ -166,30 +211,289 @@ void getPath(List L, Graph G, int u) {
 
 // makeNull()
 // Deletes all edges of G, restoring it to its original (no edge) state.
-void makeNull(Graph G);
+void makeNull(Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling makeNull() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    // restore G to its original state:
+    // all neighbors are empty lists
+    // all colors are white
+    // all parents are NIL
+    // all distances are INF
+    
+    for (int i=0; i < G->order; i++) {
+        if (i == 0) { // index 0, there is no List or elements defined
+            G->neighbors[0] = NULL;
+        } else { // for all other indices (vertices)
+            clear(G->neighbors[i]); // clear the neighbors List
+            
+            // even though G is NULL, it has already been declared to be of size n
+            // this does not change, so its not necessary to free all other elements to prepare for a new size - size n doesn't change
+            G->color[i] = WHITE;
+            G->parent[i] = NIL;
+            G->distance[i] = INF;
+        }
+    }
+    
+    // restore size and most recent source to original values
+    G->size = 0;
+    G->mostRecentSource = NIL;
+}
 
 // addEdge()
 // Inserts a new edge joining u to v
 // u is added to the adjacency List of v, and v to the adjacency List of u
 // These Lists  are maintained in sorted order by increasing labels.
 // Pre: the two int arguments must lie in the range 1 to getOrder(G)
-void addEdge(Graph G, int u, int v);
+void addEdge(Graph G, int u, int v) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling addEdge() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    // an undirected edge is added from u to v
+    // so v is added to u's neighbors list and u is added to v's in sorted order (smallest to largest)
+    
+    // add v to u's neighbors list
+    List uNeighbors = G->neighbors[u];
+    
+    if (length(uNeighbors) == 0) { // uNeighbors is empty
+        append(uNeighbors, v); // append the first neighbor
+        
+    } else { // if uNeighbors has other elements in it
+        moveFront(uNeighbors);
+        
+        int isDuplicate = 0; // duplicate flag
+        int hasInserted = 0; // elemenent has been inserted into list flag
+        
+        while(index(uNeighbors) >= 0) {
+            int currElem = get(uNeighbors);
+            if (v > currElem) { // v is bigger than currElem
+                moveNext(uNeighbors); // move to next element
+                
+            } else if (v < currElem) { // v is smaller than currElem
+                insertBefore(uNeighbors, v); // insert v before currElem
+                hasInserted = 1;
+                break;
+                
+            } else if (currElem == v) { // if v is equal to a current elem
+                isDuplicate = 1; // do nothing, there should be no duplicate directed edges
+                break;
+            }
+        }
+        // if while exits and v is not a duplicate element in uNeighbors List
+        // add v to the back of the list, it is the largest element
+        
+        if (isDuplicate == 0 && hasInserted == 0) {
+            append(uNeighbors, v);
+        }
+    }
+    
+    
+    // Now add u to v's neighbors list
+    List vNeighbors = G->neighbors[v];
+    
+    if (length(vNeighbors) == 0) { // vNeighbors is empty
+        append(vNeighbors, u); // append the first element
+        
+    } else { // vNeighbors has other elements in it
+        moveFront(vNeighbors);
+         
+        int isDuplicate = 0; // duplicate element flag
+        int hasInserted = 0; // elem has been inserted flag
+        
+        while(index(vNeighbors) >= 0) {
+            int currElem = get(vNeighbors);
+            if (u > currElem) { // v is bigger than currElem
+                moveNext(vNeighbors); // move to next element
+                
+            } else if (u < currElem) { // v is smaller than currElem
+                insertBefore(vNeighbors, u); // insert v before currElem
+                hasInserted = 1;
+                break;
+                
+            } else if (currElem == u) { // if v is equal to a current elem
+                isDuplicate = 1; // do nothing, there should be no duplicate directed edges
+                break;
+            }
+        }
+        // if while exits and v is not a duplicate element in uNeighbors List
+        // add v to the back of the list, it is the largest element
+        
+        if (isDuplicate == 0 && hasInserted == 0) {
+            append(vNeighbors, u);
+        }
+    }
+}
 
 // addArc()
 // Inserts a new directed edge from u to v
-// v is added to teh adjacency List of u (but not u to the adjacency List of v)
+// v is added to the adjacency List of u (but not u to the adjacency List of v)
 // Pre: the two int arguments must lie in the range 1 to getOrder(G)
-void addArc(Graph G, int u, int v);
+void addArc(Graph G, int u, int v) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling addArc() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    if (u < 1 || u > getOrder(G)) {
+        fprintf(stderr, "Graph Error: the first argument given to addArc() isn an invalid vertex\n");
+        exit(EXIT_FAILURE);
+    }
+    if (v < 1 || v > getOrder(G)) {
+        fprintf(stderr, "Graph Error: the second argument given to addArc() is an invalid vertex\n");
+        exit(EXIT_FAILURE);
+    }
+
+    // a directed edge is added from u to v
+    // so v is added to u's neighbors list in sorted order (smallest to largest)
+    
+    List uNeighbors = G->neighbors[u];
+    
+    if (length(uNeighbors) == 0) { // no other elems in uNeighbors
+        append(uNeighbors, v);
+        
+    } else { // there are other elems in uNeighbors
+        moveFront(uNeighbors);
+        
+        int isDuplicate = 0;
+        int hasInserted = 0;
+        
+        while(index(uNeighbors) >= 0) {
+            int currElem = get(uNeighbors);
+            if (v > currElem) { // v is bigger than currElem
+                moveNext(uNeighbors); // move to next element
+                
+            } else if (v < currElem) { // v is smaller than currElem
+                insertBefore(uNeighbors, v); // insert v before currElem
+                hasInserted = 1;
+                break;
+                
+            } else if (currElem == v) { // if v is equal to a current elem
+                isDuplicate = 1; // do nothing, there should be no duplicate directed edges
+                break;
+            }
+        }
+        // if while exits and v is not a duplicate element in uNeighbors List
+        // add v to the back of the list, it is the largest element
+        
+        if (isDuplicate == 0 && hasInserted == 0) {
+            append(uNeighbors, v);
+        }
+    }
+}
+
 
 //BFS()
 // Runs the BFS algorithm on the Graph G with source s, setting the color, distance,
 // parent, and source fields of G accordingly.
-void BFS(Graph G, int s);
+// Pre: 1 <= s <= getOrder(G)
+void BFS(Graph G, int s) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling BFS() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    if (s < 1 || s > getOrder(G)) {
+        fprintf(stderr, "Graph Error: calling BFS() with invalid source\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    /* Teacher's Pseudo-Code
+     BFS(G,s)
+        for x in V(G)-{s}
+             color[x] = white
+             d[x] = inf
+             p[x] = nil
+        color[s] = gray       // discover the source s
+        d[s] = 0
+        p[s] = nil
+        Q = { }              // construct a new empty queue
+        Enqueue(Q,s)
+        while Q != { }       // while Q is not empty
+             x = Dequeue(Q)
+             for y in adj[x]
+                  if color[y] == white         // y is undiscovered
+                       color[y] = gray         // discover y
+                       d[y] = d[x]+1
+                       p[y] = x
+                       Enqueue(Q,y)
+             color[x] = black                  // finish x
+     */
+    
+    
+    // reset color, parent, and distance arrays for each vertex
+    for (int i=0; i < G->order; i++) {
+        if (i != 0) { // ignore the 0th elem
+            G->color[i] = WHITE;
+            G->parent[i] = NIL;
+            G->distance[i] = INF;
+        }
+    }
+    
+    // discover the source s, set its distance and parent as NIL
+    G->color[s] = GRAY;
+    G->distance[s] = 0;
+    G->parent[s] = NIL;
+    
+    // construct an empty Queue (List)
+    List Q = newList();
+    
+    // add the source to Q
+    append(Q, s);
+    
+    while (length(Q) != 0) {   // while Q is not empty
+        
+        // Dequeueing
+        int currVertex = front(Q); // currVertex is the front element of Q
+        deleteFront(Q); // delete the front element
+        
+        // search currVertex's neighbors list and add to Q
+        List currVertexNeighbors = G->neighbors[currVertex]; // neighbors of currVertex
+        moveFront(currVertexNeighbors);
+        while (index(currVertexNeighbors) >= 0) { // traversing currNeighbors List
+            int currNeighbor = get(currVertexNeighbors); // current neighbor
+            
+            if (G->color[currNeighbor] == WHITE) { // if curr neighbor is undiscovered
+                G->color[currNeighbor] = GRAY; // discover the neighbor
+                G->parent[currNeighbor] = currVertex; // parent of currNeighbor is currVertex
+                G->distance[currNeighbor] = (G->distance[currVertex] + 1); // distance is the distance of the parent + 1
+                
+                // enqueue currNeighbor into Q (put in back of Q)
+                append(Q, currNeighbor);
+            }
+            
+            // currVertex's neighbors have now all been put into Q (discovered)
+            // so currVertex is now fully discovered
+            G->color[currVertex] = BLACK;
+
+            moveNext(currVertexNeighbors); // go to next neighbor
+        }
+    }
+    
+    G->mostRecentSource = s; // set the most recent source of G
+    
+    freeList(&Q);
+
+}
 
 
 // Other operations -----------------------------------------------------------
 
 // printGraph()
 // Prints the adjacency List representation of G to the file pointed to by out.
-void printGraph(FILE* out, Graph G);
-
+void printGraph(FILE* out, Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling printGraph() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    // print out the vertex and its adjacency list
+    for (int i = 0; i <= G->order; i++) {
+        if (i != 0) {
+            fprintf(out, "%d: ", i);
+            printList(out, G->neighbors[i]);
+            fprintf(out, "\n");
+        }
+    }
+}
