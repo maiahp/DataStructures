@@ -30,7 +30,7 @@ int main(int argc, const char * argv[]) {
     }
    
     
-    
+    /*
     // hardcoding the filename (testing):
     in = fopen("in1.txt", "r");
     if(in==NULL) {
@@ -43,7 +43,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     // end (testing)
-     
+     */
     
     int n;
     

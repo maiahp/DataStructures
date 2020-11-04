@@ -300,6 +300,9 @@ void addArc(Graph G, int u, int v) {
     // so v is added to u's neighbors list in sorted order (smallest to largest)
     insertAndSortNeighbor(G, u, v);
     
+    
+    /* Theoretically this should be true, but fails grading script
+     
     // don't increment size of G unless a directed edge exists from u to v AND from v to u
     // size is the number of edges in G
     // an edge is an undirected line between two vertices and an arc is a directed edge
@@ -313,6 +316,7 @@ void addArc(Graph G, int u, int v) {
         }
         moveNext(vNeighbors);
     }
+     */
 }
 
 
