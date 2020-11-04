@@ -12,7 +12,7 @@
 int main(int argc, const char * argv[]) {
     FILE *in, *out;
 
-    
+    /*
     if ( argc != 3 ) {
         fprintf(stderr, "Usage: %s <input file> <outputfile>\n", argv[0]);
         exit(1);
@@ -28,22 +28,22 @@ int main(int argc, const char * argv[]) {
         printf("Unable to open file %s for writing\n", argv[2]);
         exit(1);
     }
-   
+   */
     
-    /*
+    
     // hardcoding the filename (testing):
-    in = fopen("in1.txt", "r");
+    in = fopen("in2.txt", "r");
     if(in==NULL) {
         printf("Unable to open file %s for reading\n", "in1.txt"); // print error message to stderr
         exit(1);
     }
-    out = fopen("out1.txt", "w");
+    out = fopen("out2.txt", "w");
     if(out==NULL) {
         printf("Unable to open file %s for writing\n", "output.txt"); // print error message to stderr
         exit(1);
     }
     // end (testing)
-     */
+     
     
     int n;
     
@@ -90,7 +90,7 @@ int main(int argc, const char * argv[]) {
             if (get(L) == NIL) { // If NIL is in L, then no path exists
                 fprintf(out, "infinity");
                 fprintf(out, "\n");
-                fprintf(out, "No 1-7 path exists");
+                fprintf(out, "No %d-%d path exists", source, dest);
                 fprintf(out, "\n");
                 
             } else { // there is a path to print
