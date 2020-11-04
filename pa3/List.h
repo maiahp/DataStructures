@@ -53,6 +53,11 @@ LIST_ELEMENT back(List L);
 // Returns cursor element of L. Pre: length()>0, index()>=0
 LIST_ELEMENT get(List L);
 
+// equals()
+// Returns true (1) iff Lists A and B are in same
+// state, and returns false (0) otherwise.
+int equals(List A, List B);
+
 
 // Manipulation procedures ----------------------------------------------------
 

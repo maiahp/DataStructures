@@ -144,6 +144,38 @@ LIST_ELEMENT get(List L) {
     return(L->cursor->data);
 }
 
+// equals()
+// Returns true (1) iff Lists A and B are in same
+// state, and returns false (0) otherwise.
+int equals(List A, List B) {
+    if (A == NULL || B == NULL) {
+        fprintf(stderr, "List Error: calling equals() on one or both NULL List references\n");
+        exit(EXIT_FAILURE);
+    }
+    // Lists are in the same state when
+    // A and B is has the same integer sequence
+    // positions of cursors of A and B doesn't matter
+    
+    int is_same = 1; // is same is 1 if true
+    if (length(A) == length(B)) {
+        // iterate through both Lists A and B, checking for same node data
+        Node currA = A->front;
+        Node currB = B->front;
+        while (currA != NULL && currB != NULL) {
+            if (currA->data != currB->data) {
+                is_same = 0; // lists are not the same
+                break;
+            } else {
+                currA = currA->next;
+                currB = currB->next;
+            }
+        }
+    } else { // lengths not equal
+        is_same = 0; // is same is false
+    }
+    return is_same;
+}
+
 
 // Manipulation procedures ----------------------------------------------------
 

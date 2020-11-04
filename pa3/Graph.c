@@ -96,8 +96,8 @@ Graph newGraph(int n) {
 void freeGraph(Graph* pG) {
     if (pG != NULL && *pG != NULL) {
         
-        // free all lists in the arrays from 0 to n+1
-        for(int i=0; i < ((*pG)->order + 1); i++) {
+        // free all lists in the arrays from 1 to n+1
+        for(int i=1; i < ((*pG)->order + 1); i++) {
             freeList(&((*pG)->neighbors[i]));
         }
         
@@ -212,7 +212,8 @@ void getPath(List L, Graph G, int u) {
         append(L, NIL);
     } else {
         // there exists a path between the source and u
-        getPath(L, G, G->parent[u]); // recursive call with u's parent
+        int parent = G->parent[u];
+        getPath(L, G, parent); // recursive call with u's parent
         append(L, u); // add vertices to List from the source down to u
     }
 }
@@ -315,7 +316,7 @@ void addArc(Graph G, int u, int v) {
 }
 
 
-//BFS()
+// BFS()
 // Runs the BFS algorithm on the Graph G with source s, setting the color, distance,
 // parent, and source fields of G accordingly.
 // Pre: 1 <= s <= getOrder(G)
@@ -329,31 +330,8 @@ void BFS(Graph G, int s) {
         exit(EXIT_FAILURE);
     }
     
-    /* Teacher's Pseudo-Code
-     BFS(G,s)
-        for x in V(G)-{s}
-             color[x] = white
-             d[x] = inf
-             p[x] = nil
-        color[s] = gray       // discover the source s
-        d[s] = 0
-        p[s] = nil
-        Q = { }              // construct a new empty queue
-        Enqueue(Q,s)
-        while Q != { }       // while Q is not empty
-             x = Dequeue(Q)
-             for y in adj[x]
-                  if color[y] == white         // y is undiscovered
-                       color[y] = gray         // discover y
-                       d[y] = d[x]+1
-                       p[y] = x
-                       Enqueue(Q,y)
-             color[x] = black                  // finish x
-     */
-    
-    
     // reset color, parent, and distance arrays for each vertex
-    for (int i=0; i < G->order; i++) {
+    for (int i=0; i < G->order+1; i++) {
         if (i != 0) { // ignore the 0th elem
             G->color[i] = WHITE;
             G->parent[i] = NIL;
@@ -419,10 +397,14 @@ void printGraph(FILE* out, Graph G) {
     }
     
     // print out the vertex and its adjacency list
-    for (int i = 1; i <= G->order; i++) {
+    for (int i = 1; i < (G->order + 1); i++) {
         fprintf(out, "%d: ", i);
         printList(out, G->neighbors[i]);
-        fprintf(out, "\n");
+        
+        // no new line for last print
+        if (i != (G->order + 1)) {
+            fprintf(out, "\n");
+        }
     }
 }
 
