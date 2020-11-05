@@ -24,8 +24,8 @@ int main() {
     addEdge(G, 1, 10);
     addEdge(G, 1, 4);
     addEdge(G, 2, 6);
-    addEdge(G, 3, 8);
-    addEdge(G, 3, 5);
+    addEdge(G, 3, 1);
+    addEdge(G, 3, 4);
     addEdge(G, 5, 2);
     addEdge(G, 6, 2);
     addEdge(G, 5, 4);
