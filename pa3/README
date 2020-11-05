@@ -33,3 +33,7 @@ README  -  written by me. A description of each file submitted for pa3.
 Makefile  -  provided by the Professor. Compiles the source code.
 
 
+
+Note to grader: 
+The Graph ADT methods getPath() and BFS() algorithms were taken from the Professor's example code.
+
