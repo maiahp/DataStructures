@@ -1,7 +1,7 @@
 /*
 * Maiah Pardo, mapardo
 * 2020 Fall CSE 101 PA3
-* Arithmetic.c
+* FindPath.c
 * Client module for the Graph ADT
 */
 
