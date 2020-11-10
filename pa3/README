@@ -35,5 +35,6 @@ Makefile  -  provided by the Professor. Compiles the source code.
 
 
 Note to grader: 
-The Graph ADT methods getPath() and BFS() algorithms were taken from the Professor's example code.
-
+The Graph ADT methods getPath() and BFS() algorithms were modelled from the Professor's example code.
+FindPath and Graph executes without memory leaks.
+All public exported methods in Graph.h are tested in GraphTest.c. 
