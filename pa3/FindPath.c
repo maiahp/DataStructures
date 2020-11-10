@@ -19,12 +19,12 @@ int main(int argc, const char * argv[]) {
     // open files for reading and writing
     in = fopen(argv[1], "r");
     if(in==NULL) {
-        printf("Unable to open file %s for reading\n", argv[1]);
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
         exit(1);
     }
     out = fopen(argv[2], "w");
     if( out==NULL ){
-        printf("Unable to open file %s for writing\n", argv[2]);
+        fprintf(stderr, "Unable to open file %s for writing\n", argv[2]);
         exit(1);
     }
     
