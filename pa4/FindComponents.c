@@ -1,9 +1,9 @@
-//
-//  main.c
-//  pa4
-//
-//  Created by Maiah Pardo on 11/3/20.
-//
+/*
+* Maiah Pardo, mapardo
+* 2020 Fall CSE 101 PA4
+* FindComponents.c
+* Client module for the Graph ADT
+*/
 
 #include <stdio.h>
 
