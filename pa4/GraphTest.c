@@ -1,8 +1,8 @@
 /*
 * Maiah Pardo, mapardo
 * 2020 Fall CSE 101 PA4
-* Graph.h
-* Header file for Graph ADT
+* GraphTest.c
+* Test module for the Graph ADT
 */
 
 #include <stdio.h>

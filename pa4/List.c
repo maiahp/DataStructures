@@ -1,8 +1,9 @@
 /*
 * Maiah Pardo, mapardo
 * 2020 Fall CSE 101 PA4
-* List.h
-* Header file for List ADT
+* List.c
+* Implementation file for List ADT
+* The List ADT is a Doubly Linked List that includes a cursor for iteration. The cursor underscores up to one element in the List, and the default cursor state is "undefined".
 */
 
 #ifndef List_h
