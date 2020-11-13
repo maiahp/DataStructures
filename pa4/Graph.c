@@ -9,7 +9,6 @@
 
 // prototypes --------------------------------------------------------------------------
 void insertAndSortNeighbor(Graph G, int u, int v);
-void insertAndSortList(List L, int u);
 
 
 // structs -----------------------------------------------------------------------------
@@ -162,7 +161,7 @@ int getFinish(Graph G, int u) {
 
 // addArc()
 // Inserts a new directed edge from u to v
-// v is added to teh adjacency List of u (but not u to the adjacency List of v)
+// v is added to the adjacency List of u (but not u to the adjacency List of v)
 // Pre: the two int arguments must lie in the range 1 to getOrder(G)
 void addArc(Graph G, int u, int v) {
     if (G == NULL) {
@@ -210,9 +209,71 @@ void addEdge(Graph G, int u, int v) {
     G->size++;
 }
     
+
+// Visit()
+// Visits the vertex given as the parameter, updating discovery time and finish time fields accordingly.
+void Visit(Graph G, int x, int *time, List S) {
+    G->discoverTime[x] = ((*time)++);  // update discover time of vertex x
+    G->color[x] = GRAY; // x is now gray (discovered but a path btwn discovered & undiscovered vertices)
+    
+    // go through x's adj list and visit x's undiscovered neighbors
+    List neighbors_of_x = G->neighbors[x];
+    moveFront(neighbors_of_x);
+    while(index(neighbors_of_x) >= 0) {
+        int neighbor = get(neighbors_of_x);
+        if (G->color[neighbor] == WHITE) {
+            G->parent[neighbor] = x;
+            Visit(G, neighbor, time, S);
+        }
+    }
+    G->color[x] = BLACK; // x is now discovered
+    G->finishTime[x] = ((*time)++); // update finish time of x
+    
+    prepend(S, x); // add the finished vertex to the top(front) of S
+}
+
 // DFS()
+// Runs the Depth First Search Algorithm on Graph G
+// The order of vertices processed is contained in the List S
 // Pre: length(S)==getOrder(G)
-void DFS(Graph G, List S);
+void DFS(Graph G, List S) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling DFS() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    if (S == NULL) {
+        fprintf(stderr, "Graph Error: calling DFS() with NULL List reference\n");
+        exit(EXIT_FAILURE);
+    }
+    if (length(S) != getOrder(G)) {
+        fprintf(stderr, "Graph Error: the first argument given to addArc() isn an invalid List\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    // set all colors to white, parents to nil, discover/finish times to undef
+    for(int i=1; i < getOrder(G)+1; i++) {  // for each vertex (in smallest to largest order) in G
+        G->color[i] = WHITE;
+        G->parent[i] = NIL;
+        G->discoverTime[i] = UNDEF;
+        G->finishTime[i] = UNDEF;
+    }
+    
+    // create time variable
+    int time = 0;
+    
+    // create pointer to time's address
+    int* timePtr = &time;
+    
+    // go through each vertex in the List S and process vertices according to this order
+    moveFront(S);
+    while(index(S) >= 0) {
+        int currVertex = get(S); // get the next currVertex from S
+        if (G->color[currVertex] == WHITE) { // if color of currVertex is white, process it through Visit()
+            Visit(G, currVertex, timePtr, S);     // give Visit the pointer to time's address
+        }
+        moveNext(S);
+    }
+}
 
 
 // Other operations -----------------------------------------------------------
@@ -221,56 +282,48 @@ void DFS(Graph G, List S);
 // Returns a reference to a new graph object representing the transpose of G
 // The transpose of G is obtained obtained by reversing directions on all edges of G.
 Graph transpose(Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling transpose() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
     
     // Note:
     // To reverse an edge in G
     // For each v in G:
     //     For each neighbor in v.neighbors:
-    //         add v to neighbor's adj list
+    //         add v to neighbor's adj list in G^T
     
     
-    // create a pointer to G's neighbors list
-    // This will be referenced to build a new neighbor's list
-    // Must be free'd at end
-    List* old_neighbors = G->neighbors;
+    Graph GT = newGraph(getOrder(G));
     
-    
-    // Create space for a new neighbors array
-    List* new_neighbors = (List *)malloc(sizeof(List)*(getOrder(G)+1));
-    
-    // Initialize array of new lists
-    for(int i=1; i < (getOrder(G)+1) ; i++) {
-        new_neighbors[i] = newList();
-    }
-    
-    for (int currVertex=1; currVertex < getOrder(G)+1; currVertex++) { // for each vertex in G
-        List neighborsList = G->neighbors[currVertex]; // neighborsList of currVertex
-        for (int neighbor=1; neighbor < length(neighborsList); neighbor++) { // each neighbor in neighborsList
-            
-            // Add currVertex to neighbor's adj list in new_neighbors in sorted order
-            insertAndSortList(new_neighbors[neighbor], currVertex);
+    for (int currVertex=1; currVertex < getOrder(G)+1; currVertex++) {       // for each vertex in G
+        List neighborsList = G->neighbors[currVertex];                       // neighborsList of currVertex
+        
+        // traverse neighborsList, grabbing each neighbor, and add currVertex to its adj list
+        moveFront(neighborsList);
+        while(index(neighborsList) >= 0) {
+            int neighbor = get(neighborsList);
+            addArc(GT, neighbor, currVertex); // add currVertex to each neighbor's adj list
+            moveNext(neighborsList);
         }
     }
     
-    // free old_neighbors list (the list inside of G)
-    for (int i=1; i < getOrder(G)+1; i++) {
-        freeList(&(old_neighbors[i]));
-    }
-    
-    // point G's adj list to new_neighbors
-    G->neighbors = new_neighbors;
-    
-    // return G
-    return G;
+    // size of GT is updated from addArc()
+    return GT;
 }
 
 // copyGraph()
 // Returns a reference to a new graph object that is a copy of G
 Graph copyGraph(Graph G) {
+    if (G == NULL) {
+        fprintf(stderr, "Graph Error: calling copyGraph() on NULL Graph reference\n");
+        exit(EXIT_FAILURE);
+    }
+    
     Graph copyG = newGraph(getOrder(G));
     copyG->size = getSize(G);
     
-    for (int i=0; i<getOrder(G); i++) {
+    for (int i=1; i<(getOrder(G)+1); i++) {
         copyG->neighbors[i] = G->neighbors[i];
         copyG->color[i] = G->color[i];
         copyG->parent[i] = G->parent[i];
@@ -339,30 +392,5 @@ void insertAndSortNeighbor(Graph G, int u, int v) {
         if (isDuplicate == 0 && hasInserted == 0) {
             append(uNeighbors, v);
         }
-    }
-}
-
-    
-// insertAndSortList()
-// Inserts a vertex v into a List L in sorted (least to greatest) order
-void insertAndSortList(List L, int u) {
-    
-    if (length(L) == 0) {   // L is empty
-        append(L, u);
-    } else {                // L contains elements
-        moveFront(L);
-        while(index(L) >= 0) {
-            int currElem = get(L);
-            if (u > currElem) {             // u is greater than currElem
-                moveNext(L);                // move to next Elem
-            } else if (u < currElem) {      // u is less than currElem
-                insertBefore(L, u);         // insert before currElem
-                return;
-            } else if (u == currElem) {     // u already exists in L
-                return;                     // don't add u to L
-            }
-        }
-        // if exited while, u is larger than all elements in L
-        append(L, u);
     }
 }

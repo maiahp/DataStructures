@@ -80,6 +80,7 @@ void addArc(Graph G, int u, int v);
 void addEdge(Graph G, int u, int v);
     
 // DFS()
+// Runs the Depth First Search Algorithm on Graph G
 // Pre: length(S)==getOrder(G)
 void DFS(Graph G, List S);
 
