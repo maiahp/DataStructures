@@ -68,6 +68,7 @@ void freeGraph(Graph* pG) {
     if (pG != NULL && *pG != NULL) {
         
         // free all lists in the arrays from 1 to n+1
+        // There is no list at index 0
         for(int i=1; i < ((*pG)->order + 1); i++) {
             freeList(&((*pG)->neighbors[i]));
         }
@@ -169,7 +170,7 @@ void addArc(Graph G, int u, int v) {
         exit(EXIT_FAILURE);
     }
     if (u < 1 || u > getOrder(G)) {
-        fprintf(stderr, "Graph Error: the first argument given to addArc() isn an invalid vertex\n");
+        fprintf(stderr, "Graph Error: the first argument given to addArc() is an invalid vertex\n");
         exit(EXIT_FAILURE);
     }
     if (v < 1 || v > getOrder(G)) {
@@ -213,7 +214,10 @@ void addEdge(Graph G, int u, int v) {
 // Visit()
 // Visits the vertex given as the parameter, updating discovery time and finish time fields accordingly.
 void Visit(Graph G, int x, int *time, List S) {
-    G->discoverTime[x] = ((*time)++);  // update discover time of vertex x
+    
+    (*time)++; // this should increment time in its address correctly (double check this)
+    
+    G->discoverTime[x] = *time;  // update discover time of vertex x
     G->color[x] = GRAY; // x is now gray (discovered but a path btwn discovered & undiscovered vertices)
     
     // go through x's adj list and visit x's undiscovered neighbors
@@ -225,9 +229,11 @@ void Visit(Graph G, int x, int *time, List S) {
             G->parent[neighbor] = x;
             Visit(G, neighbor, time, S);
         }
+        moveNext(neighbors_of_x);
     }
     G->color[x] = BLACK; // x is now discovered
-    G->finishTime[x] = ((*time)++); // update finish time of x
+    (*time)++; // update time again
+    G->finishTime[x] = *time; // update finish time of x
     
     prepend(S, x); // add the finished vertex to the top(front) of S
 }
@@ -246,7 +252,7 @@ void DFS(Graph G, List S) {
         exit(EXIT_FAILURE);
     }
     if (length(S) != getOrder(G)) {
-        fprintf(stderr, "Graph Error: the first argument given to addArc() isn an invalid List\n");
+        fprintf(stderr, "Graph Error: calling DFS() with an invalid List; the length of L != order of G\n");
         exit(EXIT_FAILURE);
     }
     
@@ -257,6 +263,10 @@ void DFS(Graph G, List S) {
         G->discoverTime[i] = UNDEF;
         G->finishTime[i] = UNDEF;
     }
+    
+    // create a new stack which will overwrite S
+    // Will contain the finished vertices in order of finished last(top/front) to finished first(bottom/back)
+    List new_stack = newList();
     
     // create time variable
     int time = 0;
@@ -269,10 +279,23 @@ void DFS(Graph G, List S) {
     while(index(S) >= 0) {
         int currVertex = get(S); // get the next currVertex from S
         if (G->color[currVertex] == WHITE) { // if color of currVertex is white, process it through Visit()
-            Visit(G, currVertex, timePtr, S);     // give Visit the pointer to time's address
+            Visit(G, currVertex, timePtr, new_stack);     // give Visit the pointer to time's address and the new stack which will overwrite S
         }
         moveNext(S);
     }
+    
+    // when while loop exits, finished traversing through S and no longer need its data
+    // new_stack is now filled with vertices by decreasing finish times
+    clear(S);
+    
+    // put all of new_stack's data into S
+    moveFront(new_stack);
+    while(index(new_stack) >= 0) {
+        append(S, get(new_stack));
+        moveNext(new_stack);
+    }
+    
+    freeList(&new_stack);
 }
 
 
@@ -324,7 +347,7 @@ Graph copyGraph(Graph G) {
     copyG->size = getSize(G);
     
     for (int i=1; i<(getOrder(G)+1); i++) {
-        copyG->neighbors[i] = G->neighbors[i];
+        copyG->neighbors[i] = copyList(G->neighbors[i]); // copyG->neighbors[i] is a List, must be a copy of G->neighbors[i]
         copyG->color[i] = G->color[i];
         copyG->parent[i] = G->parent[i];
         copyG->discoverTime[i] = G->parent[i];

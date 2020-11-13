@@ -1,0 +1,41 @@
+Maiah Pardo
+mapardo
+ID # 1815393
+CSE 101
+PA4
+
+
+Included files:
+
+
+
+FindComponents.c -  written by me. The top-level client for the Graph ADT.
+
+
+Graph.c - written by me. The Graph ADT and its associated algorithms can perform Depth First Search (DFS) and can Transpose a Graph.
+
+
+Graph.h - provided by the Professor. A header file for the Graph ADT which contains the exported Graph operations.
+
+
+List.c  -  written by me. The List ADT is a bi-directional queue that includes a cursor for iteration.
+
+
+List.h  -  provided by the Professor. A header file for the List ADT which contains the exported List operations.
+
+
+GraphTest.c - written by me. A test file for the Graph ADT.
+
+
+README  -  written by me. A description of each file submitted.
+
+
+Makefile  -  provided by the Professor. Compiles the source code.
+
+
+
+Note to grader: 
+The Graph ADT methods DFS() and Visit() algorithms were modeled from the Professor's example code.
+FindComponents and Graph executes without memory leaks.
+All public exported methods of the Graph ADT (all methods found in the Graph.h file) are tested in GraphTest.c. 
+

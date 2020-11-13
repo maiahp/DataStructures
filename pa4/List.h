@@ -70,7 +70,6 @@ void clear(List L);
 // otherwise does nothing.
 void moveFront(List L);
 
-
 // moveBack()
 // If L is non-empty, sets cursor under the back element,
 // otherwise does nothing.
