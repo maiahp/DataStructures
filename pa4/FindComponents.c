@@ -30,20 +30,6 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     
-    /*
-    // hardcoding the filename (testing):
-    in = fopen("in2.txt", "r");
-    if(in==NULL) {
-        printf("Unable to open file %s for reading\n", "in1.txt"); // print error message to stderr
-        exit(1);
-    }
-    out = fopen("out2.txt", "w");
-    if(out==NULL) {
-        printf("Unable to open file %s for writing\n", "output.txt"); // print error message to stderr
-        exit(1);
-    }
-    // end (testing)
-    */
 
     int n;
     List S = newList();
@@ -125,12 +111,6 @@ int main(int argc, const char * argv[]) {
     while(index(S) >= 0) {
         vertex = get(S);
         if (getParent(GT, vertex) == NIL) { // if parent of current vertex is nil, read down to grab the entire scc
-            /*
-            // if final component, don't print a new line
-            if (count != num_components) {
-                fprintf(out, "\n");
-            }
-            */
             fprintf(out, "\nComponent %d: ", count);
             count++;
             
@@ -177,3 +157,4 @@ int main(int argc, const char * argv[]) {
         
     return 0;
 }
+
