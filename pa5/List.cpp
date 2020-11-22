@@ -133,12 +133,17 @@ int List::position() {
 // moveFront()
 // Moves cursor to position 0 in this List.
 void List::moveFront() {
-    
+    this->pos_cursor = 0;                       // pos of cursor is 0
+    this->beforeCursor = this->frontDummy;      // set beforeCursor to be frontDummy
+    this->afterCursor = this->frontDummy->next; // set afterCursor to be first elem in list
 }
 
 // moveBack()
 // Moves cursor to position size() in this List.
 void List::moveBack() {
+    this->pos_cursor = this->size();            // pos of cursor is size()
+    this->afterCursor = this->backDummy;        // set afterCursor to be backDummy
+    this->beforeCursor = this->backDummy->prev; // beforeCursor is last elem in list
 }
 
 // peekNext()
@@ -168,6 +173,11 @@ int List::peekPrev() {
 // was passed over.
 // pre: position()<size()
 int List::moveNext() {
+    if (this->position() >= this->size()) {
+        cerr << "List Error: calling moveNext() when there is no next element\n";
+        exit(1);
+    }
+    
 }
 
 // movePrev()
@@ -175,28 +185,46 @@ int List::moveNext() {
 // was passed over.
 // pre: position()>0
 int List::movePrev() {
+    if (this->position() <= 0) {        // cursor is at position 0
+        cerr << "List Error: calling movePrev() when there is no previous element\n";
+        exit(1);
+    }
+    
+    
 }
 
 // insertAfter()
 // Inserts x after cursor.
 void List::insertAfter(int x) {
+    // Note: X BECOMES AFTER CURSOR
 }
 
 // insertBefore()
 // Inserts x before cursor.
 void List::insertBefore(int x) {
+    // Note: X BECOMES BEFORE CURSOR
+    // the cursor must be moved forward, in order to make x the beforeCursor
 }
 
 // eraseAfter()
 // Deletes element after cursor.
 // pre: position()<size()
 void List::eraseAfter() {
+    if (this->position() >= this->size()) {
+        cerr << "List Error: calling eraseAfter() when cursor is at end of list\n";
+        exit(1);
+    }
+    
 }
 
 // eraseBefore()
 // Deletes element before cursor.
 // pre: position()>0
 void List::eraseBefore() {
+    if (this->position() <= 0) {
+        cerr << "List Error: calling eraseBefore() when cursor is at front of list\n";
+        exit(1);
+    }
 }
 
 // findNext()
@@ -207,6 +235,7 @@ void List::eraseBefore() {
 // cursor position. If x is not found, places the cursor at position size(),
 // and returns -1.
 int List::findNext(int x) {
+    // start from current cursor position
 }
 
 // findPrev()
@@ -217,6 +246,7 @@ int List::findNext(int x) {
 // cursor position. If x is not found, places the cursor at position 0, and
 // returns -1.
 int List::findPrev(int x) {
+    // start from current cursor position
 }
 
 // cleanup()
@@ -227,11 +257,18 @@ int List::findPrev(int x) {
 // elements, i.e. it lies between the same two retained elements that it
 // did before cleanup() was called.
 void List::cleanup() {
+    // start at front of list
 }
 
 // clear()
 // Deletes all elements in this List, setting it to the empty state.
 void List::clear() {
+    this->moveFront();
+    while(this->afterCursor != this->backDummy) {
+        this->eraseAfter();
+        this->moveFront();
+    }
+    // note: cursors are updated in eraseAfter and pos_cursor will be 0
 }
 
 // concat()
