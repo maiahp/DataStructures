@@ -51,8 +51,9 @@ List::List() {
 
 // Copy constructor.
 List::List(const List& L) {
+    // the copy constructor should copy contents of L into "this"
     
-    // First create an empty list
+    // First create an empty list which is "this"
     Node *temp1 = new Node(-1);
     Node *temp2 = new Node(-2);
     
@@ -76,12 +77,25 @@ List::List(const List& L) {
     
     
     // load elements of L into this
-
+    this->moveFront();
+    Node* curr_of_L = L.frontDummy->next;
+    
+    while(curr_of_L != L.backDummy) {
+        int data_of_L = curr_of_L->data;
+        this->insertAfter(data_of_L);
+        this->moveNext();
+        curr_of_L = curr_of_L->next;
+    }
+    
+    // cursor of copy list "this" should be the same as L
+    this->afterCursor = L.afterCursor;
+    this->beforeCursor = L.beforeCursor;
+    this->pos_cursor = L.pos_cursor;
 }
 
 // Destructor
 List::~List() {
-    if (isEmpty == false) {
+    if (isEmpty() == false) {
         clear();
     }
     delete frontDummy;
@@ -96,20 +110,20 @@ List::~List() {
 
 // isEmpty()
 // Returns true if this List is empty, false otherwise.
-bool isEmpty() {
+bool List::isEmpty() {
     return(this->num_elements == 0);
 }
 
 // size()
 // Returns the size of this List.
-int size() {
+int List::size() {
     return(this->num_elements);
 }
 
 // position()
 // Returns the position of the cursor in this List. The value returned
 // will be in the range 0 to size().
-int position() {
+int List::position() {
     return(this->pos_cursor);
 }
 
@@ -118,51 +132,72 @@ int position() {
 
 // moveFront()
 // Moves cursor to position 0 in this List.
-void moveFront();
+void List::moveFront() {
+    
+}
 
 // moveBack()
 // Moves cursor to position size() in this List.
-void moveBack();
+void List::moveBack() {
+}
 
 // peekNext()
 // Returns the element after the cursor.
 // pre: position()<size()
-int peekNext();
+int List::peekNext() {
+    if (this->position() >= this->size()) {
+        cerr << "List Error: calling peekNext() when there is no next element\n";
+        exit(1);
+    }
+    return(this->afterCursor->data);  // return data of elem after cursor
+}
 
 // peekPrev()
 // Returns the element before the cursor.
 // pre: position()>0
-int peekPrev();
+int List::peekPrev() {
+    if (this->position() <= 0) {
+        cerr << "List Error: calling peekPrev() when there is no previous element\n";
+        exit(1);
+    }
+    return(this->beforeCursor->data);  // return data of elem after cursor
+}
 
 // moveNext()
 // Advances cursor to next higher position. Returns the List element that
 // was passed over.
 // pre: position()<size()
-int moveNext();
+int List::moveNext() {
+}
 
 // movePrev()
 // Advances cursor to next lower position. Returns the List element that
 // was passed over.
 // pre: position()>0
-int movePrev();
+int List::movePrev() {
+}
 
 // insertAfter()
 // Inserts x after cursor.
-void insertAfter(int x);
+void List::insertAfter(int x) {
+}
 
 // insertBefore()
 // Inserts x before cursor.
-void insertBefore(int x);
+void List::insertBefore(int x) {
+}
 
 // eraseAfter()
 // Deletes element after cursor.
 // pre: position()<size()
-void eraseAfter();
+void List::eraseAfter() {
+}
 
 // eraseBefore()
 // Deletes element before cursor.
 // pre: position()>0
-void eraseBefore();
+void List::eraseBefore() {
+}
 
 // findNext()
 // Starting from the current cursor position, performs a linear search (in
@@ -171,7 +206,8 @@ void eraseBefore();
 // eraseBefore() would remove the found element), and returns the final
 // cursor position. If x is not found, places the cursor at position size(),
 // and returns -1.
-int findNext(int x);
+int List::findNext(int x) {
+}
 
 // findPrev()
 // Starting from the current cursor position, performs a linear search (in
@@ -180,7 +216,8 @@ int findNext(int x);
 // eraseAfter() would remove the found element), and returns the final
 // cursor position. If x is not found, places the cursor at position 0, and
 // returns -1.
-int findPrev(int x);
+int List::findPrev(int x) {
+}
 
 // cleanup()
 // Removes any repeated elements in this List, leaving only unique data
@@ -189,17 +226,20 @@ int findPrev(int x);
 // occurances. The cursor is not moved with respect to the retained
 // elements, i.e. it lies between the same two retained elements that it
 // did before cleanup() was called.
-void cleanup();
+void List::cleanup() {
+}
 
 // clear()
 // Deletes all elements in this List, setting it to the empty state.
-void clear();
+void List::clear() {
+}
 
 // concat()
 // Returns a new List consisting of the elements of this List, followed
 // the elements of L. The returned List's cursor will be at its front
 // (position 0).
-List concat(const List& L);
+List List::concat(const List& L) {
+}
 
 
 // Other Functions ---------------------------------------------------------
@@ -207,27 +247,31 @@ List concat(const List& L);
 // to_string()
 // Returns a string representation of this List consisting of a comma
 // separated sequence of elements, surrounded by parentheses.
-std::string to_string();
+string List::to_string() {
+}
 
 // equals()
 // Returns true if and only if this List is the same integer sequence as R.
 // The cursors in this List and in R are unchanged.
-bool equals(const List& R);
+bool List::equals(const List& R) {
+}
 
 
 // Overriden Operators -----------------------------------------------------
 
 // operator<<()
 // Inserts string representation of L into stream.
-friend std::ostream& operator<<( std::ostream& stream, List& L );
+std::ostream& operator<<( std::ostream& stream, List& L ) {
+}
 
 // operator==()
 // Returns true if and only if A is the same integer sequence as B. The
 // cursors in both Lists are unchanged are unchanged.
-friend bool operator==( List& A, const List& B );
+bool operator==( List& A, const List& B ) {
+}
 
 // operator=()
 // Overwrites the state of this List with state of L.
-List& operator=( const List& L );
+List& List::operator=( const List& L ) {
 
 };
