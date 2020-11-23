@@ -1,0 +1,28 @@
+Maiah Pardo
+mapardo
+ID # 1815393
+CSE 101
+PA5
+
+
+Included files:
+
+
+
+Shuffle.cpp  -  written by me. Performs a perfect shuffle operation on a list.
+
+
+List.cpp  -  written by me. The List ADT is a Doubly Linked List that includes a cursor for iteration. The elements themselves are not indexed; the cursor is a vertical bar standing between two elements, which cannot become undefined. A list containing n elements will have n+1 possible cursor positions: 0 signifying the front of the list, through n+1, the back.
+
+List.h  -  provided by the Professor. A header file for the List ADT which contains the exported List operations.
+
+
+ListTest.cpp  -  provided by me. A test file for the List ADT.
+
+
+README  -  written by me. A description of each file submitted for pa5.
+
+
+Makefile  -  provided by the Professor. Compiles the source code.
+
+

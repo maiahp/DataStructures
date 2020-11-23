@@ -24,7 +24,6 @@ int main(int argc, const char * argv[]) {
     while(count <= 10) {
         l.insertBefore(count);
         count++;
-        l.moveNext();
     }
     cout << "List l is: " << endl;
     cout << l << endl << endl;
@@ -89,7 +88,6 @@ int main(int argc, const char * argv[]) {
     while(count <= 10) {
         A.insertBefore(count);
         count++;
-        A.moveNext();
     }
     A.insertAfter(5);
     A.moveNext();
@@ -183,7 +181,6 @@ int main(int argc, const char * argv[]) {
     while(count <= 7) {
         A.insertBefore(count);
         count++;
-        A.moveNext();
     }
     
     cout << "List A is: " << endl;
@@ -221,6 +218,8 @@ int main(int argc, const char * argv[]) {
     }
     
     cout<<endl<<endl<<endl;
+    
+    cout<< "Done.\n";
 
     return 0;
 }
