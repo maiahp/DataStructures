@@ -31,22 +31,22 @@ List::List() {
     Node *temp2 = new Node(-2);
     
     // set front and back dummy
-    this->frontDummy = temp1;
-    this->backDummy = temp2;
+    frontDummy = temp1;
+    backDummy = temp2;
     
     // connect front & back dummy
-    this->frontDummy->next = backDummy;
-    this->backDummy->prev = frontDummy;
+    frontDummy->next = backDummy;
+    backDummy->prev = frontDummy;
     
     // cursor lies initially lies in between front & back dummy
-    this->pos_cursor = 0;
+    pos_cursor = 0;
     
     // set beforeCursor & afterCursor
-    this->beforeCursor = frontDummy;
-    this->afterCursor = backDummy;
+    beforeCursor = frontDummy;
+    afterCursor = backDummy;
     
     // set number of elements
-    this->num_elements = 0;
+    num_elements = 0;
 }
 
 // Copy constructor.
@@ -57,24 +57,28 @@ List::List(const List& L) {
     Node *temp1 = new Node(-1);
     Node *temp2 = new Node(-2);
     
-    // set front and back dummy
-    this->frontDummy = temp1;
-    this->backDummy = temp2;
+    // set front and back dummy     // NOTE TOOK OUT this->
+    frontDummy = temp1;
+    backDummy = temp2;
     
     // connect front & back dummy
-    this->frontDummy->next = backDummy;
-    this->backDummy->prev = frontDummy;
+    frontDummy->next = backDummy;
+    backDummy->prev = frontDummy;
     
     // cursor lies initially lies in between front & back dummy
-    this->pos_cursor = 0;
+    pos_cursor = 0;
     
     // set beforeCursor & afterCursor
-    this->beforeCursor = frontDummy;
-    this->afterCursor = backDummy;
+    beforeCursor = frontDummy;
+    afterCursor = backDummy;
     
     // set number of elements
-    this->num_elements = 0;
+    num_elements = 0;
     
+    // if copying an empty List, return an empty list
+    if (L.frontDummy->next == L.backDummy) {
+        return;
+    }
     
     // load elements of L into this
     this->moveFront();
@@ -82,15 +86,15 @@ List::List(const List& L) {
     
     while(curr_of_L != L.backDummy) {
         int data_of_L = curr_of_L->data;
-        this->insertAfter(data_of_L);
+        insertAfter(data_of_L);
         this->moveNext();
         curr_of_L = curr_of_L->next;
     }
     
     // cursor of copy list "this" should be the same as L
-    this->afterCursor = L.afterCursor;
-    this->beforeCursor = L.beforeCursor;
-    this->pos_cursor = L.pos_cursor;
+    afterCursor = L.afterCursor;
+    beforeCursor = L.beforeCursor;
+    pos_cursor = L.pos_cursor;
 }
 
 // Destructor
@@ -205,6 +209,13 @@ int List::movePrev() {
 void List::insertAfter(int x) {
     // Note: X BECOMES AFTER CURSOR
     Node* temp = new Node(x);
+    
+    //Node bc = &(this->beforeCursor);
+    //Node ac = &(this->afterCursor);
+    
+    // ERROR HERE: does not change frontDummy and backDummy's next and prevs
+    // only updates beforeCursor & afterCursor's next and prev
+    
     this->beforeCursor->next = temp;
     this->afterCursor->prev = temp;
     temp->prev = beforeCursor;
@@ -340,7 +351,7 @@ void List::cleanup() {
                     // then we ammend the cursor to be at back position
                     this->moveBack();
                 }
-                break;
+                //break;
             }
             j = j->next;
         }

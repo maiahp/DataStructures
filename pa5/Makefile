@@ -30,4 +30,4 @@ check1 : ListClient
 	valgrind --leak-check=full ListClient
 
 check2 : Shuffle
-	valgrind --leak-check=full Shuffle 35
+	valgrind -s --show-leak-kinds=all --leak-check=full ./Shuffle 35
