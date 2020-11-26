@@ -332,30 +332,50 @@ int List::findPrev(int x) {
 // did before cleanup() was called.
 void List::cleanup() {
     // start at front of list
+    int pos_of_i = 0; // store position of element i
+    int pos_of_j = 0; // store position of j (the element to be deleted if a delete occurs)
+    
     Node* i = this->frontDummy->next;
     Node* j;
     while (i != this->backDummy) {
         j = i->next;
+        pos_of_j = pos_of_i+1;
         while (j != this->backDummy) {
             if (i->data == j->data) { // datas are the same
                 Node* temp = j;
                 // delete j, it is the duplicate
                 j->prev->next = j->next;
                 j->next->prev = j->prev;
+                
+                if (pos_of_j <= pos_cursor) {    // position of j is position of element to be deleted
+                    // if the position of the elem deleted is less than cursor position
+                    // then the cursor moves back one element to stay at correct place
+                    // note: movePrev() doesn't work here because of the deletions
+                    if (pos_of_j == pos_cursor) { // if pos of j is = to position of cursor
+                        // then j (elem to delete) is the beforeCursor
+                        // beforeCursor must be updated to element before j
+                        this->beforeCursor = this->beforeCursor->prev;
+                        // afterCursor stays the same
+                    }
+                    this->pos_cursor--; // position of cursor moves down one to stay at same place
+                    
+                } else if (pos_of_j == pos_cursor+1) { // if pos of j is = to position of cursor + 1
+                    // then j (elem to delete) is the afterCursor
+                    // afterCursor must be updated to elem after afterCursor
+                    this->afterCursor = this->afterCursor->next;
+                    // beforeCursor stays the same
+                }
+                // delete the element
                 delete temp;
                 temp = nullptr;
                 this->num_elements--;
-                
-                if (pos_cursor > num_elements) {
-                    // if pos_cursor is out of range after deletion
-                    // then we ammend the cursor to be at back position
-                    this->moveBack();
-                }
-                //break;
             }
             j = j->next;
+            pos_of_j++;
         }
         i = i->next;
+        pos_of_i++;
+        pos_of_j = 0;
     }
 }
 
