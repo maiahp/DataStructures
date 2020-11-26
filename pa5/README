@@ -26,3 +26,7 @@ README  -  written by me. A description of each file submitted for pa5.
 Makefile  -  provided by the Professor. Compiles the source code.
 
 
+note to grader:
+All public exported methods inside of List.cpp are tested in ListTest.cpp.
+
+

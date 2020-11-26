@@ -26,7 +26,9 @@ int main(int argc, const char * argv[]) {
     }
     cout << "List l is: " << endl;
     cout << l << endl << endl;
-    cout << l << endl;
+    cout << "List l is empty: " << l.isEmpty() << endl;
+    cout << "Size of List l: " << l.size() << endl;
+    cout << "Position of cursor in l: " << l.position() << endl << endl;
     
     // testing copy constructor:
     List D = l;
@@ -136,20 +138,16 @@ int main(int argc, const char * argv[]) {
     // testing clean up
     cout << "Inserting into A" << endl;
     A.moveFront();
-    
     A.insertAfter(10);
-    
     A.moveNext();
     A.moveNext();
-    
     A.insertAfter(10);
-    
+    A.insertBefore(3);
     A.moveNext();
     A.moveNext();
     A.moveNext();
     A.moveNext();
     A.moveNext();
-    
     A.insertAfter(10);
     A.insertAfter(3);
     A.insertAfter(5);
@@ -219,6 +217,9 @@ int main(int argc, const char * argv[]) {
     } else {
         cout << "false" << endl;
     }
+    
+    cout << "\nOverwriting the state of A with the state of l" << endl;
+    cout << "A is now: " << A;
     
     cout<<endl<<endl<<endl;
     
