@@ -5,7 +5,6 @@
 * Test module for the List ADT
 */
 
-/*
 #include <iostream>
 #include <string>
 #include "List.h"
@@ -28,6 +27,10 @@ int main(int argc, const char * argv[]) {
     cout << "List l is: " << endl;
     cout << l << endl << endl;
     cout << l << endl;
+    
+    // testing copy constructor:
+    List D = l;
+    cout << "List D, a copy of L, is: " << D << endl << endl;
     
     // testing peekNext() and moveNext()
     cout << "Testing peekNext() and moveNext()" << endl;
@@ -224,4 +227,4 @@ int main(int argc, const char * argv[]) {
     return 0;
 }
 
-*/
+
