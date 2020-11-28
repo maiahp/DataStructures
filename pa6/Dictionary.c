@@ -116,11 +116,30 @@ VAL_TYPE lookup(Dictionary D, KEY_TYPE k) {
          exit(EXIT_FAILURE);
      }
     // search the tree by comparing keys to find k
-    Node curr = D->root;
-    while (curr != NULL) {
-        
-    }
+    // note: if keys are not unique, find and return the first one with key = k
     
+    // note:
+    // strcmp(x, y)
+    // returns neg if ascii value of x < y
+    // returns pos if ascii value of x > y
+    // returns 0 if ascii values are equal
+    
+    Node currNode = D->root;
+    while (curr != NULL) {
+        KEY_TYPE currKey = curr->key;
+        if (KEY_CMP(currKey, k) < 0) { // ascii value of x < y
+            // move to left child of currNode
+            currNode = currNode->left;
+        } else if (KEY_CMP(currKey, k) < 0) { // ascii value of x > y
+            // move to right child of currNode
+            currNode = currNode->right;
+        } else { // ascii value of x = y
+            // found k
+            return currNode->val;
+        }
+    }
+    // reached here, then k was not found in the tree
+    return VAL_UNDEF;   // return val undef
 }
 
 

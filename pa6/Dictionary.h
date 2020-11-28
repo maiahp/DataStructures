@@ -17,7 +17,7 @@
 #define VAL_UNDEF -1
 #define KEY_FORMAT "%s"
 #define VAL_FORMAT "%d"
-#define KEY_CMP(x,y) strcmp((x),(y))
+#define KEY_CMP(x,y) strcmp((x),(y))  
 
 
 // Exported type --------------------------------------------------------------
