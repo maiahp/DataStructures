@@ -33,9 +33,27 @@ typedef struct DictionaryObj {
 //newNode()
 // Creates and returns reference to a new Node object.
 // Initializes next, prev and data fields
-Node newNode(KEY_TYPE key, VAL_TYPE val) {
+Node newNode(KEY_TYPE key_data, VAL_TYPE val_data) {
     Node N = (Node *)malloc(sizeof(NodeObj));
-    N->key = key;  // since key is a string, must it be malloced?
+    
+    // get size of key string
+    int size_key_data = 0;
+    for(int i=0; i < 300; i++) {
+        if (key_data[i] == '\n' || key_data[i] == '\0') { // if char is '\n' or '\0'
+            break;
+        }
+        size_key_data++; // increment size
+    }
+    
+    // since key is a (char *) it must be malloc'd
+    N->key = (char *)malloc(size_key_data+1); // +1 for null character
+    
+    // place each char from key into the key char array
+    for(int i=0; i < sizeOfKey; i++) {
+        N->key[i] = key_data[i];
+    }
+    N->key[size_key_data] = '\0'; // place null character at end of key char array
+    
     N->val = val;
     N->parent = NULL;
     N->left = NULL;
@@ -47,10 +65,12 @@ Node newNode(KEY_TYPE key, VAL_TYPE val) {
 // Frees heap memory pointed to by *pN, sets *pN to NULL.
 void freeNode(Node* pN) {
     if ((pN != NULL && *pN != NULL)) {
-        free(*pN); // if key is a string and is malloced, will have to free it here
+        free((*pN)->key);
+        free(*pN);
         *pN = NULL;
     }
 }
+
 // newDictionary()
 // Creates a new empty Dictionary. If unique==false (0), then the Dictionary
 // will accept duplicate keys, i.e. distinct pairs with identical keys. If
@@ -89,7 +109,7 @@ void freeDictionary(Dictionary* pD) {
 // Returns the number of (key, value) pairs in Dictionary D.
 int size(Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling size() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling size() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
     return(D->size);
@@ -100,7 +120,7 @@ int size(Dictionary D) {
 // false (0) if D accepts distinct pairs with identical keys.
 int getUnique(Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling getUnique() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling getUnique() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
     return((D->unique==1)); // true if 1, false if 0
@@ -112,7 +132,7 @@ int getUnique(Dictionary D) {
 // returns VAL_UNDEF.
 VAL_TYPE lookup(Dictionary D, KEY_TYPE k) {
     if (D == NULL) {
-         printf("Dictionary Error: calling lookup() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling lookup() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
     // search the tree by comparing keys to find k
@@ -152,9 +172,50 @@ VAL_TYPE lookup(Dictionary D, KEY_TYPE k) {
 // is enforced.
 void insert(Dictionary D, KEY_TYPE k, VAL_TYPE v) {
     if (D == NULL) {
-         printf("Dictionary Error: calling insert() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling insert() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
+    if (getUnique(D) == 1 && lookup(D, k) != VAL_UNDEF) {    // if D is only allowed unique keys and key already exits in D
+        fprintf(stderr, "Dictionary Error: calling insert() with a duplicate key when Dictionary is set to unique\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    Node nodeToInsert = newNode(k, v);          // create new node with k,v
+    Node y = NULL;
+    Node x = D->root;
+    
+    while (x != NULL) {
+        y = x;
+        if (nodeToInsert->key < x->key) {
+            x = x->left;
+        } else {
+            x = x->right;
+        }
+    }
+    nodeToInsert->parent = y;                   // set the parent of the nodeToInsert
+    if (y == NULL) {                            // if parent is null, nodeToInsert becomes the root
+        D->root = nodeToInsert;                 // D was empty
+    } else if (nodeToInsert->key < y->key) {    // if nodeToInsert's key is less than its parent's key
+        y->left = nodeToInsert;                 // set as left child of parent
+    } else {                                    // if nodeToInsert's key is greater than its parent key
+        y->right = nodeToInsert;                // set as right child of parent
+    }
+}
+
+// Transplant()
+// Replaces Node u's key and value data with Node v's key and value data
+// Only used as a helper function to delete()
+void Transplant(Dictionary D, Node u, Node v) {
+    if (u->parent == NULL) {
+        D->root = v;
+    } else if (u->parent == u->parent->left) {
+        u->parent->left = v;
+    } else {
+        u->parent->right = v;
+    }
+    if (v != NULL) {
+        v->parent = u->parent;
+    }
 }
 
 // delete()
@@ -162,16 +223,51 @@ void insert(Dictionary D, KEY_TYPE k, VAL_TYPE v) {
 // Pre: lookup(D,k)!=VAL_UNDEF (i.e. D contains a pair whose key is k.)
 void delete(Dictionary D, KEY_TYPE k) {
     if (D == NULL) {
-         printf("Dictionary Error: calling delete() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling delete() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
+    if (lookup(D, k) == VAL_UNDEF) { // D does not contain a pair whose key is k
+        fprintf(stderr, "Dictionary Error: calling delete() on non-existent key\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    // Find the node to delete in D
+    Node currNode = D->root;
+    while (currNode != NULL) {
+        if (k > currNode->key) {            // k is larger than currNode's key
+            currNode = currNode->right;     // move to currNode's right child
+        } else if (k < currNode->key) {     // k is smaller than currNode's key
+            currNode = currNode->left;      // move to currNode's left child
+        } else {                            // k == currNode's key
+            break;
+        }
+    }
+    
+    // Reached here, then currNode contains the key k
+    Node nodeToDelete = currNode;
+    
+    if (nodeToDelete->left == NULL) {                       // nodeToDelete has no left child
+        Transplant(T, nodeToDelete, nodeToDelete->right);   // replace nodeToDelete with its right child
+    } else if (nodeToDelete->right == NULL) {               // nodeToDelete has no right child
+        Transplant(T, nodeToDelete, nodeToDelete->left);    // replace nodeToDelete with its left child
+    } else {                    //
+        Node y = TreeMinimum(nodeToDelete->right);          //
+        if (y->parent != nodeToDelete) {
+            Transplant(D, y, y->right);
+            y->right = nodeToDelete->right;
+            y->right->parent = y;
+        }
+        Transplant(D, nodeToDelete, y);
+        y->left = nodeToDelete->left;
+        y->left->parent = y;
+    }
 }
 
 // makeEmpty()
 // Reset Dictionary D to the empty state, containing no pairs.
 void makeEmpty(Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling makeEmpty() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling makeEmpty() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
 }
@@ -182,7 +278,7 @@ void makeEmpty(Dictionary D) {
 // value. If D is empty, returns VAL_UNDEF.
 VAL_TYPE beginForward(Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling beginForward() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling beginForward() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
 }
@@ -193,7 +289,7 @@ VAL_TYPE beginForward(Dictionary D) {
 // value. If D is empty, returns VAL_UNDEF.
 VAL_TYPE beginReverse(Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling beginReverse() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling beginReverse() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
 }
@@ -203,7 +299,7 @@ VAL_TYPE beginReverse(Dictionary D) {
 // the current key. If no iteration is underway, returns KEY_UNDEF.
 KEY_TYPE currentKey(Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling currentKey() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling currentKey() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
 }
@@ -214,7 +310,7 @@ KEY_TYPE currentKey(Dictionary D) {
 // returns VAL_UNDEF.
 VAL_TYPE currentVal(Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling currentVal() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling currentVal() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
 }
@@ -228,7 +324,7 @@ VAL_TYPE currentVal(Dictionary D) {
 // returns VAL_UNDEF.
 VAL_TYPE next(Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling next() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling next() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
 }
@@ -243,7 +339,7 @@ VAL_TYPE next(Dictionary D) {
 // returns VAL_UNDEF.
 VAL_TYPE prev(Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling prev() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling prev() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
 }
@@ -258,7 +354,7 @@ VAL_TYPE prev(Dictionary D) {
 // KEY_CMP().
 void printDictionary(FILE* out, Dictionary D) {
     if (D == NULL) {
-         printf("Dictionary Error: calling printDictionary() on NULL Dictionary reference\n");
+         fprintf(stderr, "Dictionary Error: calling printDictionary() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
 }
