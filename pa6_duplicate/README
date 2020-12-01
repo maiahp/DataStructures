@@ -1,0 +1,29 @@
+Maiah Pardo
+mapardo
+ID # 1815393
+CSE 101
+PA6
+
+
+Included files:
+
+
+
+Lex.c  -  written by me. The client module for pa6, which reads lines from the input file, stores the lines in an array and uses the Dictionary ADT to print out the lines in sorted order.
+
+
+Dictionary.c  -  written by me. The Dictionary ADT is an underlying Binary Search Tree. A Dictionary maintains a set of pairs called key and value. The Dictionary contains a switch that determines whether or not it will accept duplicate keys. 
+
+
+List.h  -  provided by the Professor. A header file for the Dictionary ADT which contains the exported Dictionary operations.
+
+
+DictionaryTest  -  written by me. A test client for the Dictionary ADT.
+
+
+README  -  written by me. A description of each file submitted for pa6.
+
+
+Makefile  -  provided by the Professor. Compiles the source code.
+
+

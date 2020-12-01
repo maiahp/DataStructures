@@ -27,7 +27,7 @@ typedef struct DictionaryObj {
     Node currNode;              // current node of the BST (when iterating)
     
     Node NIL;                   // the "NIL" dummy node that is all leaf nodes and parent of the root
-} DictionaryObj;
+}
 
 
 // Constructors-Destructors ---------------------------------------------------
@@ -36,7 +36,7 @@ typedef struct DictionaryObj {
 // Creates and returns reference to a new Node object.
 // Initializes next, prev and data fields
 Node newNode(KEY_TYPE key_data, VAL_TYPE val_data) {
-    Node N = malloc(sizeof(NodeObj));
+    Node N = (Node *)malloc(sizeof(NodeObj));
     
     // get size of key string
     int size_key_data = 0;
@@ -51,12 +51,12 @@ Node newNode(KEY_TYPE key_data, VAL_TYPE val_data) {
     N->key = (char *)malloc(size_key_data+1); // +1 for null character
     
     // place each char from key into the key char array
-    for(int i=0; i < size_key_data; i++) {
+    for(int i=0; i < sizeOfKey; i++) {
         N->key[i] = key_data[i];
     }
     N->key[size_key_data] = '\0'; // place null character at end of key char array
     
-    N->val = val_data;
+    N->val = val;
     N->parent = NULL;
     N->left = NULL;
     N->right = NULL;
@@ -80,11 +80,11 @@ void freeNode(Node* pN) {
 // accepted. In this case, the operation insert(D, k) will enforce the
 // precondition: lookup(D, k)==VAL_UNDEF
 Dictionary newDictionary(int unique) {
-    if (unique != 1 && unique != 0) {
+    if (unique != 1 || unique != 0) {
         fprintf(stderr, "Dictionary Error: calling newDictionary() with an invalid entry for unique\n");
         exit(EXIT_FAILURE);
     }
-    Dictionary D = malloc(sizeof(DictionaryObj));
+    Dictionary D = (Dictionary *)malloc(sizeof(DictionaryObj));
     D->size = 0;
     D->unique = unique;
     D->root = NULL;
@@ -121,33 +121,12 @@ Node inOrderPredecessor(Dictionary D, Node currNode);
 // getLeftMostChild()
 // Private function to retrieve the left most child node of the given currNode
 // If D is empty, returns NULL
-Node getLeftMostChild(Dictionary D, Node currNode) {
-    // note:
-    // because this fcn is only called inside of local in Dictionary.c file, no need for null Dict check, all other fcns do this already
-    
-    if (size(D) == 0) {     // check if dict is empty
-        return NULL;
-    }
-    while (currNode->left != D->NIL) {  // traverse through all left children
-        currNode = currNode->left;
-    }
-    return currNode;     // the left most leaf of branch starting at currNode
-}
+Node getLeftMostChild(Dictionary D, Node currNode);
 
 // getRightMostChild()
 // Private function to retrieve the right most child node of the given currNode
 // If D is empty, returns NULL
-Node getRightMostChild(Dictionary D, Node currNode) {
-    if (size(D) == 0) {     // check if dict is empty
-        return NULL;
-    }
-    while (currNode->right != D->NIL) {  // traverse through all right children
-        currNode = currNode->right;
-    }
-    return currNode;     // the right most leaf of branch starting at currNode
-}
-
-
+Node getRightMostChild(Dictionary D, Node currNode);
 // Access functions -----------------------------------------------------------
 
 // size()
@@ -190,8 +169,8 @@ VAL_TYPE lookup(Dictionary D, KEY_TYPE k) {
     // returns 0 if ascii values are equal
     
     Node currNode = D->root;
-    while (currNode != NULL) {
-        KEY_TYPE currKey = currNode->key;
+    while (curr != NULL) {
+        KEY_TYPE currKey = curr->key;
         if (KEY_CMP(currKey, k) < 0) { // ascii value of x < y
             // move to left child of currNode
             currNode = currNode->left;
@@ -292,11 +271,11 @@ void delete(Dictionary D, KEY_TYPE k) {
     Node nodeToDelete = currNode;
     
     if (nodeToDelete->left == NULL) {                       // nodeToDelete has no left child
-        Transplant(D, nodeToDelete, nodeToDelete->right);   // replace nodeToDelete with its right child
+        Transplant(T, nodeToDelete, nodeToDelete->right);   // replace nodeToDelete with its right child
     } else if (nodeToDelete->right == NULL) {               // nodeToDelete has no right child
-        Transplant(D, nodeToDelete, nodeToDelete->left);    // replace nodeToDelete with its left child
+        Transplant(T, nodeToDelete, nodeToDelete->left);    // replace nodeToDelete with its left child
     } else {                    //
-        Node y = getLeftMostChild(D, nodeToDelete->right);          //
+        Node y = TreeMinimum(nodeToDelete->right);          //
         if (y->parent != nodeToDelete) {
             Transplant(D, y, y->right);
             y->right = nodeToDelete->right;
@@ -326,7 +305,6 @@ VAL_TYPE beginForward(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling beginForward() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return 1;
 }
 
 // beginReverse()
@@ -338,7 +316,6 @@ VAL_TYPE beginReverse(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling beginReverse() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return 1;
 }
 
 // currentKey()
@@ -349,7 +326,6 @@ KEY_TYPE currentKey(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling currentKey() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return "h";
 }
 
 // currentVal()
@@ -361,7 +337,6 @@ VAL_TYPE currentVal(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling currentVal() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return 1;
 }
 
 // next()
@@ -376,7 +351,6 @@ VAL_TYPE next(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling next() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return 1;
 }
 
 
@@ -392,7 +366,6 @@ VAL_TYPE prev(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling prev() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return 1;
 }
 
 

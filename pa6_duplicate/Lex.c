@@ -11,6 +11,6 @@
 
 int main(int argc, const char * argv[]) {
     Dictionary D = newDictionary(1);
-    freeDictionary(&D);
+    
     return 0;
 }
