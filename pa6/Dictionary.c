@@ -87,10 +87,9 @@ Dictionary newDictionary(int unique) {
     Dictionary D = malloc(sizeof(DictionaryObj));
     D->size = 0;
     D->unique = unique;
-    D->root = NULL;
     D->currNode = NULL;
-    
     D->NIL = newNode("dummy", -1);
+    D->root = D->NIL; // point root to the NIL Node
     return D;
 }
 
@@ -101,6 +100,7 @@ void freeDictionary(Dictionary* pD) {
         if ((*pD)->size != 0) {
             makeEmpty(*pD);
         }
+        freeNode(&((*pD)->NIL));   // free dummy NIL node
         free(*pD); // delete heap memory
         *pD = NULL; // pD points to null
     }
@@ -120,14 +120,10 @@ Node inOrderPredecessor(Dictionary D, Node currNode);
 
 // getLeftMostChild()
 // Private function to retrieve the left most child node of the given currNode
-// If D is empty, returns NULL
 Node getLeftMostChild(Dictionary D, Node currNode) {
     // note:
     // because this fcn is only called inside of local in Dictionary.c file, no need for null Dict check, all other fcns do this already
     
-    if (size(D) == 0) {     // check if dict is empty
-        return NULL;
-    }
     while (currNode->left != D->NIL) {  // traverse through all left children
         currNode = currNode->left;
     }
@@ -138,9 +134,6 @@ Node getLeftMostChild(Dictionary D, Node currNode) {
 // Private function to retrieve the right most child node of the given currNode
 // If D is empty, returns NULL
 Node getRightMostChild(Dictionary D, Node currNode) {
-    if (size(D) == 0) {     // check if dict is empty
-        return NULL;
-    }
     while (currNode->right != D->NIL) {  // traverse through all right children
         currNode = currNode->right;
     }
@@ -190,12 +183,12 @@ VAL_TYPE lookup(Dictionary D, KEY_TYPE k) {
     // returns 0 if ascii values are equal
     
     Node currNode = D->root;
-    while (currNode != NULL) {
+    while (currNode != D->NIL) {      // while currNode is not the dummy node
         KEY_TYPE currKey = currNode->key;
-        if (KEY_CMP(currKey, k) < 0) { // ascii value of x < y
+        if (KEY_CMP(k, currKey) < 0) { // k is less than currKey
             // move to left child of currNode
             currNode = currNode->left;
-        } else if (KEY_CMP(currKey, k) < 0) { // ascii value of x > y
+        } else if (KEY_CMP(k, currKey) > 0) { // k is greater than currKey
             // move to right child of currNode
             currNode = currNode->right;
         } else { // ascii value of x = y
@@ -229,32 +222,38 @@ void insert(Dictionary D, KEY_TYPE k, VAL_TYPE v) {
     Node y = NULL;
     Node x = D->root;
     
-    while (x != NULL) {
+    while (x != D->NIL) {
         y = x;
-        if (nodeToInsert->key < x->key) {
+        if (KEY_CMP(nodeToInsert->key, x->key) < 0) { // node to insert's key is less than x's key
             x = x->left;
         } else {
             x = x->right;
         }
     }
     nodeToInsert->parent = y;                   // set the parent of the nodeToInsert
-    if (y == NULL) {                            // if parent is null, nodeToInsert becomes the root
+    if (y == NULL) {                            // if parent is nil, nodeToInsert becomes the root
         D->root = nodeToInsert;                 // D was empty
-    } else if (nodeToInsert->key < y->key) {    // if nodeToInsert's key is less than its parent's key
+        nodeToInsert->parent = D->NIL;          // set new root's parent to NIL
+    } else if (KEY_CMP(nodeToInsert->key, y->key) < 0) {    // if nodeToInsert's key is less than its parent's key
         y->left = nodeToInsert;                 // set as left child of parent
     } else {                                    // if nodeToInsert's key is greater than its parent key
         y->right = nodeToInsert;                // set as right child of parent
     }
+    
+    // set the newly inserted node's children as nil
+    nodeToInsert->right = D->NIL;
+    nodeToInsert->left = D->NIL;
+    D->size++;
 }
 
 // Transplant()
-// Replaces Node u's key and value data with Node v's key and value data
+// Replaces Node u with Node v
 // Only used as a helper function to delete()
 void Transplant(Dictionary D, Node u, Node v) {
-    if (u->parent == NULL) {
-        D->root = v;
-    } else if (u->parent == u->parent->left) {
-        u->parent->left = v;
+    if (u->parent == D->NIL) {  // if u's parent is nil, it is the root
+        D->root = v;    // update D->root
+    } else if (u == u->parent->left) { // if u is its parent's left child
+        u->parent->left = v;    // replace u's parent's left's data with v
     } else {
         u->parent->right = v;
     }
@@ -276,29 +275,39 @@ void delete(Dictionary D, KEY_TYPE k) {
         exit(EXIT_FAILURE);
     }
     
+    if (D->size == 1) { // if there is one node in the dict
+        // delete the root
+        Node nodeToDelete = D->root;  // node to delete is the root
+        D->root = D->NIL;             // new root is NIL
+        freeNode(&nodeToDelete);      // free node to delete
+        nodeToDelete = NULL;          
+        D->size--;
+        return;
+    }
+    
     // Find the node to delete in D
     Node currNode = D->root;
-    while (currNode != NULL) {
-        if (k > currNode->key) {            // k is larger than currNode's key
+    while (currNode != D->NIL) {
+        if (KEY_CMP(k, currNode->key) > 0) {      // k is larger than currNode's key
             currNode = currNode->right;     // move to currNode's right child
-        } else if (k < currNode->key) {     // k is smaller than currNode's key
+        } else if (KEY_CMP(k, currNode->key) < 0) {  // k is smaller than currNode's key
             currNode = currNode->left;      // move to currNode's left child
         } else {                            // k == currNode's key
             break;
         }
     }
     
-    // Reached here, then currNode contains the key k
+    // Reached here, then currNode contains the key k and is node to be deleted
     Node nodeToDelete = currNode;
     
-    if (nodeToDelete->left == NULL) {                       // nodeToDelete has no left child
+    if (nodeToDelete->left == D->NIL) {                     // nodeToDelete has no left child
         Transplant(D, nodeToDelete, nodeToDelete->right);   // replace nodeToDelete with its right child
-    } else if (nodeToDelete->right == NULL) {               // nodeToDelete has no right child
+    } else if (nodeToDelete->right == D->NIL) {             // nodeToDelete has no right child
         Transplant(D, nodeToDelete, nodeToDelete->left);    // replace nodeToDelete with its left child
-    } else {                    //
-        Node y = getLeftMostChild(D, nodeToDelete->right);          //
+    } else {       // node has both its children or none
+        Node y = getLeftMostChild(D, nodeToDelete->right);
         if (y->parent != nodeToDelete) {
-            Transplant(D, y, y->right);
+            Transplant(D, y, y->right);     // if y's right is NIL, will replace y with NIL
             y->right = nodeToDelete->right;
             y->right->parent = y;
         }
@@ -306,6 +315,16 @@ void delete(Dictionary D, KEY_TYPE k) {
         y->left = nodeToDelete->left;
         y->left->parent = y;
     }
+    
+    // delete the node
+    freeNode(&nodeToDelete);
+    nodeToDelete = NULL;
+    D->size--;
+    
+    // delete all connections made in D->NIL node
+    D->NIL->left = NULL;
+    D->NIL->parent = NULL;
+    D->NIL->right = NULL;
 }
 
 // makeEmpty()
@@ -315,6 +334,17 @@ void makeEmpty(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling makeEmpty() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
+    
+    if (size(D) == 0) { // if the tree is empty, do nothing
+        return;
+    }
+    
+    Node root = D->root;
+    while(root != D->NIL) {
+        delete(D, D->root->key);    // keep deleting the root node
+        root = D->root;         // currNode is the root
+    }
+    D->root = D->NIL;
 }
 
 // beginForward()
@@ -409,4 +439,3 @@ void printDictionary(FILE* out, Dictionary D) {
          exit(EXIT_FAILURE);
      }
 }
-
