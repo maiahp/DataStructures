@@ -1,8 +1,7 @@
-//
-//  Order.c
-//  pa7
-//
-//  Created by Maiah Pardo on 12/2/20.
-//
-
+/*
+* Maiah Pardo, mapardo
+* 2020 Fall CSE 101 PA6
+* Order.c
+* Client Module for Dictionary ADT
+*/
 #include <stdio.h>
