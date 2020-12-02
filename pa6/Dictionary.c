@@ -294,17 +294,19 @@ void delete(Dictionary D, KEY_TYPE k) {
         exit(EXIT_FAILURE);
     }
     
-    if (D->size == 1) { // if there is one node in the dict
+    // if there is only one node in D
+    if (D->size == 1) {
         // delete the root
         Node nodeToDelete = D->root;  // node to delete is the root
         D->root = D->NIL;             // new root is NIL
         freeNode(&nodeToDelete);      // free node to delete
         nodeToDelete = NULL;          
         D->size--;
+        D->currNode = NULL;           // since there are no nodes in D, reset D->currNode to NUL:
         return;
     }
     
-    // Find the node to delete in D
+    // More than one node in D, find the node to delete
     Node currNode = D->root;
     while (currNode != D->NIL) {
         if (KEY_CMP(k, currNode->key) > 0) {      // k is larger than currNode's key
@@ -318,6 +320,12 @@ void delete(Dictionary D, KEY_TYPE k) {
     
     // Reached here, then currNode contains the key k and is node to be deleted
     Node nodeToDelete = currNode;
+    
+    // if node to be deleted is the currNode in D, set currNode as NULL
+    if (nodeToDelete == D->currNode) { // if D->currNode = node to delete, k
+        D->currNode = NULL;     // set D->currNode as NULL
+    }
+    
     
     if (nodeToDelete->left == D->NIL) {                     // nodeToDelete has no left child
         Transplant(D, nodeToDelete, nodeToDelete->right);   // replace nodeToDelete with its right child
@@ -364,6 +372,7 @@ void makeEmpty(Dictionary D) {
         root = D->root;         // currNode is the root
     }
     D->root = D->NIL;
+    D->currNode = NULL; // set currNode as NULL
 }
 
 // beginForward()
@@ -375,6 +384,9 @@ VAL_TYPE beginForward(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling beginForward() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
+    if (size(D) == 0) { // if size of D is 0, return VAL_UNDEF
+        return VAL_UNDEF;
+    }
     // to begin forward traverse
     // the first node returned is the smallest node in the dict
     // this is the left mode node from the root
@@ -392,6 +404,9 @@ VAL_TYPE beginReverse(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling beginReverse() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
+    if (size(D) == 0) {     // if size of D is 0, return VAL_UNDEF
+        return VAL_UNDEF;
+    }
     // to begin reverse traverse
     // the first node returned is the largest node in the dict
     // this is the right mode node from the root
