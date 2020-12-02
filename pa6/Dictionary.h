@@ -5,7 +5,6 @@
 //-----------------------------------------------------------------------------
 #include<stdlib.h>
 #include<stdio.h>
-#include<stdbool.h>
 #include<string.h>
 
 #ifndef DICTIONARY_H_INCLUDE_
@@ -17,7 +16,7 @@
 #define VAL_UNDEF -1
 #define KEY_FORMAT "%s"
 #define VAL_FORMAT "%d"
-#define KEY_CMP(x,y) strcmp((x),(y))  
+#define KEY_CMP(x,y) strcmp((x),(y))
 
 
 // Exported type --------------------------------------------------------------
@@ -128,13 +127,4 @@ VAL_TYPE prev(Dictionary D);
 void printDictionary(FILE* out, Dictionary D);
 
 
-
-
-
-
-
-
-
 #endif
-
-
