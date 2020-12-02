@@ -356,7 +356,11 @@ VAL_TYPE beginForward(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling beginForward() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return 1;
+    // to begin forward traverse
+    // the first node returned is the smallest node in the dict
+    // this is the left mode node from the root
+    Node smallest = getLeftMostChild(D, D->root);
+    return(smallest->val);
 }
 
 // beginReverse()
@@ -368,7 +372,11 @@ VAL_TYPE beginReverse(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling beginReverse() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return 1;
+    // to begin reverse traverse
+    // the first node returned is the largest node in the dict
+    // this is the right mode node from the root
+    Node largest = getRightMostChild(D, D->root);
+    return(largest->val);
 }
 
 // currentKey()
@@ -379,7 +387,13 @@ KEY_TYPE currentKey(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling currentKey() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return "h";
+    
+    if (D->currNode == NULL || D->currNode == D->NIL) {
+        return KEY_UNDEF;
+    }
+    
+    // return currNode's key
+    return(D->currNode->key);
 }
 
 // currentVal()
@@ -391,7 +405,12 @@ VAL_TYPE currentVal(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling currentVal() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    return 1;
+    if (D->currNode == NULL || D->currNode == D->NIL) {
+        return VAL_UNDEF;
+    }
+    
+    // return currNode's key
+    return(D->currNode->val);
 }
 
 // next()
@@ -406,6 +425,7 @@ VAL_TYPE next(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling next() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
+    // get the next IN ORDER node from D->currNode
     return 1;
 }
 
@@ -422,6 +442,7 @@ VAL_TYPE prev(Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling prev() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
+    // get the previous IN ORDER node from D->currNode
     return 1;
 }
 
