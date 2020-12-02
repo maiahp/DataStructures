@@ -108,16 +108,6 @@ void freeDictionary(Dictionary* pD) {
 
 // Private Helper functions ---------------------------------------------------
 
-// inOrderSucessor()
-// Private function that returns a node's in-order successor
-// An in-order successor is the left most node (smallest) of currNode's right subtree.
-Node inOrderSucessor(Dictionary D, Node currNode);
-
-// inOrderPredecessor()
-// Private fucntion that returns a node's in-order predecessor.
-// An in-order predecessor is the right most node (largest) of currNode's left subtree.
-Node inOrderPredecessor(Dictionary D, Node currNode);
-
 // getLeftMostChild()
 // Private function to retrieve the left most child node of the given currNode
 Node getLeftMostChild(Dictionary D, Node currNode) {
@@ -140,6 +130,35 @@ Node getRightMostChild(Dictionary D, Node currNode) {
     return currNode;     // the right most leaf of branch starting at currNode
 }
 
+// inOrderSucessor()
+// Private function that returns a node's in-order successor
+// An in-order successor is the left most node (smallest) of currNode's right subtree.
+Node inOrderSucessor(Dictionary D, Node currNode) {
+    if (currNode->right != D->NIL) {
+        return getLeftMostChild(D, currNode->right);
+    }
+    Node parent = currNode->parent;
+    while(parent != D->NIL && currNode != parent->left) {   // is it parent->left?????
+        currNode = parent;
+        parent = parent->parent;
+    }
+    return parent;
+}
+
+// inOrderPredecessor()
+// Private fucntion that returns a node's in-order predecessor.
+// An in-order predecessor is the right most node (largest) of currNode's left subtree.
+Node inOrderPredecessor(Dictionary D, Node currNode) {
+    if (currNode->left != D->NIL) {
+        return getRightMostChild(D, currNode->left);
+    }
+    Node parent = currNode->parent;
+    while(parent != D->NIL && currNode != parent->right) {
+        currNode = parent;
+        parent = parent->parent;
+    }
+    return parent;
+}
 
 // Access functions -----------------------------------------------------------
 
@@ -360,6 +379,7 @@ VAL_TYPE beginForward(Dictionary D) {
     // the first node returned is the smallest node in the dict
     // this is the left mode node from the root
     Node smallest = getLeftMostChild(D, D->root);
+    D->currNode = smallest; // update currNode
     return(smallest->val);
 }
 
@@ -376,6 +396,7 @@ VAL_TYPE beginReverse(Dictionary D) {
     // the first node returned is the largest node in the dict
     // this is the right mode node from the root
     Node largest = getRightMostChild(D, D->root);
+    D->currNode = largest; // update currNode
     return(largest->val);
 }
 
@@ -426,7 +447,12 @@ VAL_TYPE next(Dictionary D) {
          exit(EXIT_FAILURE);
      }
     // get the next IN ORDER node from D->currNode
-    return 1;
+    if (D->currNode == D->NIL) { // if currNode is nil
+        return VAL_UNDEF;
+    }
+    Node next = inOrderSucessor(D, D->currNode); // get the successor
+    D->currNode = next; // update the currNode to its successor
+    return D->currNode->val;
 }
 
 
@@ -443,7 +469,13 @@ VAL_TYPE prev(Dictionary D) {
          exit(EXIT_FAILURE);
      }
     // get the previous IN ORDER node from D->currNode
-    return 1;
+    // get the next IN ORDER node from D->currNode
+    if (D->currNode == D->NIL) { // if currNode is nil
+        return VAL_UNDEF;
+    }
+    Node prev = inOrderPredecessor(D, D->currNode); // get the successor
+    D->currNode = prev; // update the currNode to its successor
+    return D->currNode->val;
 }
 
 
@@ -459,4 +491,19 @@ void printDictionary(FILE* out, Dictionary D) {
          fprintf(stderr, "Dictionary Error: calling printDictionary() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
+    
+    // in order tree traversal
+    Node currNode = getLeftMostChild(D, D->root);      // currNode is the smallest, left most node in D
+    Node largestNode = getRightMostChild(D, D->root);
+    
+    while(currNode != D->NIL) {
+        // print the current node
+        fprintf(out, KEY_FORMAT, currNode->key);
+        fprintf(out, " ");
+        fprintf(out, VAL_FORMAT, currNode->val);
+        if (currNode != largestNode) {
+            fprintf(out, "\n");
+        }
+        currNode = inOrderSucessor(D, currNode); // get next in order node
+    }
 }
