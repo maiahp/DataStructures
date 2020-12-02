@@ -113,6 +113,9 @@ void freeDictionary(Dictionary* pD) {
 Node getLeftMostChild(Dictionary D, Node currNode) {
     // note:
     // because this fcn is only called inside of local in Dictionary.c file, no need for null Dict check, all other fcns do this already
+    if (size(D) == 0) {
+        return D->NIL;
+    }
     
     while (currNode->left != D->NIL) {  // traverse through all left children
         currNode = currNode->left;
@@ -124,6 +127,10 @@ Node getLeftMostChild(Dictionary D, Node currNode) {
 // Private function to retrieve the right most child node of the given currNode
 // If D is empty, returns NULL
 Node getRightMostChild(Dictionary D, Node currNode) {
+    if (size(D) == 0) {
+        return D->NIL;
+    }
+    
     while (currNode->right != D->NIL) {  // traverse through all right children
         currNode = currNode->right;
     }
@@ -512,6 +519,9 @@ void printDictionary(FILE* out, Dictionary D) {
     Node largestNode = getRightMostChild(D, D->root);
     
     while(currNode != D->NIL) {
+        if (currNode == NULL) {
+            break;
+        }
         // print the current node
         fprintf(out, KEY_FORMAT, currNode->key);
         fprintf(out, " ");
