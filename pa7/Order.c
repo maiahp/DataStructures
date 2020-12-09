@@ -37,20 +37,19 @@ int main(int argc, const char * argv[]) {
     }
      
     
-    /*
     // hardcoding the filename (testing):
-    in = fopen("infile5.txt", "r");
-    if(in==NULL) {
-        printf("Unable to open file %s for reading\n", "input.txt"); // print error message to stderr
-        exit(1);
-    }
-    out = fopen("outfile5.txt", "w");
-    if(out==NULL) {
-        printf("Unable to open file %s for writing\n", "output.txt"); // print error message to stderr
-        exit(1);
-    }
+    //in = fopen("infile5.txt", "r");
+    //if(in==NULL) {
+    //    printf("Unable to open file %s for reading\n", "input.txt"); // print error message to stderr
+    //    exit(1);
+    //}
+    //out = fopen("outfile5.txt", "w");
+    //if(out==NULL) {
+    //    printf("Unable to open file %s for writing\n", "output.txt"); // print error message to stderr
+    //    exit(1);
+    //}
     // end (testing)
-    */
+    
     
     // grab each line from file and insert key, val into dict
     // line = key
@@ -98,3 +97,4 @@ int main(int argc, const char * argv[]) {
 
 // note: there is a really big file that contains blanks
 // im not sure if the blanks should be counted in the outfile
+
