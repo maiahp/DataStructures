@@ -81,13 +81,13 @@ int main(int argc, const char * argv[]) {
     free(line);
     
     fprintf(out, "******************************************************\nPRE-ORDER:\n******************************************************\n");
-    printDictionary(stdout, D, "pre");
+    printDictionary(out, D, "pre");
     
     fprintf(out, "\n\n\n******************************************************\nIN-ORDER:\n******************************************************\n");
-    printDictionary(stdout, D, "in");
+    printDictionary(out, D, "in");
     
     fprintf(out, "\n\n\n******************************************************\nPOST-ORDER:\n******************************************************\n");
-    printDictionary(stdout, D, "post");
+    printDictionary(out, D, "post");
     
     freeDictionary(&D); // note: freeList calls clearList()
     fclose(out);
