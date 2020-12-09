@@ -215,7 +215,7 @@ void LeftRotate(Dictionary D, Node x) {
     
     // turn y's left subtree into x's right subtree
     x->right = y->left;
-    if (y->left != D->NIL) {
+    if (y->left != D->NIL && y->left != NULL) {
         y->left->parent = x;
     }
     
@@ -241,7 +241,7 @@ void RightRotate(Dictionary D, Node x) {
        
     // turn y's right subtree into x's left subtree
     x->left = y->right;
-    if (y->right != D->NIL) {  // not necessary if using sentinal nil node
+    if (y->right != D->NIL && y->right != NULL) {  // not necessary if using sentinal nil node
         y->right->parent = x;
     }
    
@@ -455,7 +455,7 @@ void RB_DeleteFixUp(Dictionary D, Node x) {
                 RightRotate(D, x->parent);                  // CASE 5
                 w = x->parent->left;                        // CASE 5
             }
-            if (w->right == D->NIL || w->left == D->NIL) {  // if w has a nil child (must check this first bc w would not have a left child, therefore we don't color it's left child black!!! which is difference btwn this and the other case 8)
+            if (w->right == D->NIL || w->left == D->NIL || w->right == NULL || w->left == NULL) {  // if w has a nil (or null) child (must check this first bc w would not have a left child, therefore we don't color it's left child black!!! which is difference btwn this and the other case 8)
                 w->color = x->parent->color;                // CASE 8 (but w has no children)
                 x->parent->color = BLACK;                   // CASE 8 (but w has no children)
                 RightRotate(D, x->parent);                  // CASE 8 (but w has no children)
@@ -864,10 +864,10 @@ VAL_TYPE next(Dictionary D) {
         return VAL_UNDEF;
     }
     Node next = inOrderSucessor(D, D->currNode); // get the successor
-    if (next == D->NIL) { // if the successor is NIL
-        return VAL_UNDEF; // return val_undef
-    }
     D->currNode = next; // update the currNode to its successor
+    if (D->currNode == D->NIL) {    // if the current node is now NIL, then iteration has ended, return VAL_UNDEF
+        return VAL_UNDEF;
+    }
     return D->currNode->val;
 }
 
