@@ -7,11 +7,14 @@
 */
 
 #include "Dictionary.h"
+#define RED 1
+#define BLACK 0
 
 // Private type --------------------------------------------------------------
 typedef struct NodeObj {
     KEY_TYPE key;
     VAL_TYPE val;
+    int color;  // red or black
     struct NodeObj *parent;
     struct NodeObj *left;       // left child
     struct NodeObj *right;      // right child
@@ -88,7 +91,9 @@ Dictionary newDictionary(int unique) {
     D->size = 0;
     D->unique = unique;
     D->currNode = NULL;
-    D->NIL = newNode("dummy", -1);
+    int num = -1;
+    D->NIL = newNode("dummy", &num); // must pass num as reference because val is int*
+    D->NIL->color = BLACK; // nil node is always black
     D->root = D->NIL; // point root to the NIL Node
     return D;
 }
@@ -145,7 +150,7 @@ Node inOrderSucessor(Dictionary D, Node currNode) {
         return getLeftMostChild(D, currNode->right);
     }
     Node parent = currNode->parent;
-    while(parent != D->NIL && currNode != parent->left) {   // is it parent->left?????
+    while(parent != D->NIL && currNode != parent->left) {
         currNode = parent;
         parent = parent->parent;
     }
@@ -166,6 +171,373 @@ Node inOrderPredecessor(Dictionary D, Node currNode) {
     }
     return parent;
 }
+
+// InOrderTreeWalk()
+void InOrderTreeWalk(FILE *out, Dictionary D, Node x, Node lastNode) {
+    if (x != D->NIL) {
+        InOrderTreeWalk(out, D, x->left, lastNode);    // recur on left children
+        fprintf(out, "%s", x->key);                    // print the key
+        if (x != lastNode) {
+            fprintf(out, "\n");
+        }
+        InOrderTreeWalk(out, D, x->right, lastNode);    // recur on right children
+    }
+}
+
+// PreOrderTreeWalk()
+void PreOrderTreeWalk(FILE *out, Dictionary D, Node x, Node lastNode) {
+    if (x != D->NIL) {
+        fprintf(out, "%s", x->key);     // print the key
+        if (x != lastNode) {
+            fprintf(out, "\n");
+        }
+        PreOrderTreeWalk(out, D, x->left, lastNode);     // recur on left children
+        PreOrderTreeWalk(out, D, x->right, lastNode);    // recur on right children
+    }
+}
+
+// InOrderTreeWalk()
+void PostOrderTreeWalk(FILE *out, Dictionary D, Node x) {
+    if (x != D->NIL) {
+        PostOrderTreeWalk(out, D, x->left);     // recur on left children
+        PostOrderTreeWalk(out, D, x->right);    // recur on right children
+        fprintf(out, "%s", x->key);             // print key
+        if (x != D->root) {     // the root is the last node to be printed
+            fprintf(out, "\n");
+        }
+    }
+}
+
+// LeftRotate()
+void LeftRotate(Dictionary D, Node x) {
+    // set y
+    Node y = x->right;
+    
+    // turn y's left subtree into x's right subtree
+    x->right = y->left;
+    if (y->left != D->NIL) {
+        y->left->parent = x;
+    }
+    
+    // link y's parent to x
+    y->parent = x->parent;
+    if (x->parent == D->NIL) {
+        D->root = y;
+    } else if (x == x->parent->left) {
+        x->parent->left = y;
+    } else {
+        x->parent->right = y;
+    }
+    
+    // put x on y's left
+    y->left = x;
+    x->parent = y;
+}
+
+// RightRotate()
+void RightRotate(Dictionary D, Node x) {
+    // set y
+    Node y = x->left;
+       
+    // turn y's right subtree into x's left subtree
+    x->left = y->right;
+    if (y->right != D->NIL) {  // not necessary if using sentinal nil node
+        y->right->parent = x;
+    }
+   
+   // link y's parent to x
+    y->parent = x->parent;
+    if (x->parent == D->NIL) {
+        D->root = y;
+    } else if (x == x->parent->right) {
+        x->parent->right = y;
+    } else {
+        x->parent->left = y;
+    }
+    
+   // put x on y's right
+    y->right = x;
+    x->parent = y;
+}
+
+// RB_InsertFixUp
+// Fixes up the RB Tree after Insertion to preserve RBT Properties
+void RB_InsertFixUp(Dictionary D, Node z) {
+    Node y = NULL;
+    
+    while(1) {
+        if (z->parent != D->NIL) {
+            if (z->parent->color != RED)break;
+        } else {
+            break;
+        }
+        if (z->parent->parent == D->NIL)break;
+        
+        // conditions to continue:
+        // currNode's parent's color exists and is red
+        // currNode's grandparent exists
+        
+        if (z->parent == z->parent->parent->left) {             // pz is ppz's left child
+            if (z->parent->parent == D->NIL)break;
+            y = z->parent->parent->right;                       // y = ppz's right child (y is z's uncle)
+            // note:
+            // z = node to delete, y = z's uncle
+            // reached here if pz is ppz's left child
+            // case 1: uncle y is red
+            // case 2: y's color is black and z is pz's right child
+            // case 3: y's color is black
+            if (y != D->NIL) {                                  // if uncle y is not NIL
+                if (y->color == RED) {                          // y is red
+                    z->parent->color = BLACK;                   // CASE 1
+                    y->color = BLACK;                           // CASE 1
+                    z->parent->parent->color = RED;             // CASE 1
+                    z = z->parent->parent;                      // CASE 1
+                } else {                                        // y is black
+                    if (z == z->parent->right) {                // z is pz's right child
+                        z = z->parent;                          // CASE 2
+                        LeftRotate(D, z);                       // CASE 2
+                    }
+                    z->parent->color = BLACK;                   // CASE 3
+                    z->parent->parent->color = RED;             // CASE 3
+                    RightRotate(D, z->parent->parent);          // CASE 3
+                }
+            } else {                                            // If uncle y is NIL
+                if (z == z->parent->right) {                    // z is pz's right child
+                    z = z->parent;                              // CASE 2
+                    LeftRotate(D, z);                           // CASE 2
+                }
+                z->parent->color = BLACK;                       // CASE 3
+                z->parent->parent->color = RED;                 // CASE 3
+                RightRotate(D, z->parent->parent);              // CASE 3
+            }
+            
+        } else {                                                // pz is ppz's right child
+            if (z->parent->parent == D->NIL)break;
+            y = z->parent->parent->left;                        // y is ppz's left child (z's uncle)
+            // note:
+            // z = node to delete, y = z's uncle
+            // reached here is pz is ppz's right child
+            // case 4: uncle y is red
+            // case 5: uncle y is black and z is pz's left child
+            // case 6: uncle y is black
+            if (y != D->NIL) {                                  // if y is not NIL
+                if (y->color == RED) {                          // y is red
+                    z->parent->color = BLACK;                   // CASE 4
+                    y->color = BLACK;                           // CASE 4
+                    z->parent->parent->color = RED;             // CASE 4
+                    z = z->parent->parent;                      // CASE 4
+                } else {                                        // y is black
+                    if (z == z->parent->left) {                 // z is pz's left child
+                        z = z->parent;                          // CASE 5
+                        RightRotate(D, z);                      // CASE 5
+                    }
+                    z->parent->color = BLACK;                   // CASE 6
+                    z->parent->parent->color = RED;             // CASE 6
+                    LeftRotate(D, z->parent->parent);           // CASE 6
+                }
+            } else {                                            // If uncle y is NIL
+                if (z == z->parent->left) {                     // z is pz's left child
+                    z = z->parent;                              // CASE 5
+                    RightRotate(D, z);                          // CASE 5
+                }
+                z->parent->color = BLACK;                       // CASE 6
+                z->parent->parent->color = RED;                 // CASE 6
+                LeftRotate(D, z->parent->parent);               // CASE 6
+            }
+        }
+    }
+    D->root->color = BLACK;                                     // color the root black
+
+    /* Professor's Pseudo-Code that my code is modelled after
+    Node z = currNode
+    Node y;
+    while (z->parent->color == RED) {
+        if (z->parent == z->parent->parent->left) {
+            y = z->parent->parent->right;
+            if (y->color == RED) {
+                z->parent->color = BLACK;               // case 1
+                y->color = BLACK;                       // case 1
+                z->parent->parent->color = RED;         // case 1
+                z = z->parent->parent;                  // case 1
+            } else {
+                if (z == z->parent->right) {
+                    z = z->parent;                      // case 2
+                    LeftRotate(D, z);                   // case 2
+                }
+                z->parent->color = BLACK;               // case 3
+                z->parent->parent->color = RED;         // case 3
+                RightRotate(D, z);                      // case 3
+            }
+        } else {
+            y = z->parent->parent->left;
+            if (y->color == RED) {
+                z->parent->color = BLACK;               // case 4
+                y->color = BLACK;                       // case 4
+                z->parent->parent->color = RED;         // case 4
+                z = z->parent->parent;                  // case 4
+            } else {
+                if (z == z->parent->left) {
+                    z = z->parent;                      // case 5
+                    RightRotate(D, z);                  // case 5
+                }
+                z->parent->color = BLACK;               // case 6
+                z->parent->parent->color = RED;         // case 6
+                LeftRotate(D, z->parent->parent);       // case 6
+            }
+        }
+    }
+    D->root->color = BLACK;
+     */
+}
+
+// RB_DeleteFixUp()
+// Fixes up the RB Tree after Deletion to preserve RBT Properties
+void RB_DeleteFixUp(Dictionary D, Node x) {
+    // x = node to delete
+    Node w = NULL;
+    if (x == D->NIL)return;                             // if x, the node to delete, is nil, return
+    while(x != D->root && x->color == BLACK) {          // while x is not root and x is black
+        if (x == x->parent->left) {                     // if x is px's left child
+            // note:
+            // x is not root, x is black
+            // x is px's left child
+            // set w to be px's right child
+            // case 1: if w is red
+            // case 2: if w's children are both black
+            // case 3: if w's children are NOT both black, w's right child is black
+            // case 4: both w's children are NOT black
+            w = x->parent->right;                       // set w to be px's right child
+            if (w->color == RED) {                      // if w is red
+                w->color = BLACK;                       // CASE 1
+                x->parent->color = RED;                 // CASE 1
+                LeftRotate(D, x->parent);               // CASE 1
+                w = x->parent->right;                   // CASE 1
+            }
+      
+            if (w->left != D->NIL && w->right != D->NIL) { // if one is null, both are null since tree is balanced
+                if (w->left->color == BLACK && w->right->color == BLACK) {  // if both w's children are black
+                    w->color = RED;                     // CASE 2
+                    x = x->parent;                      // CASE 2
+                } else {                                // both of w's children are NOT both black
+                    if (w->right->color == BLACK) {     // w's right child is black
+                        w->left->color = BLACK;         // CASE 3
+                        w->color = RED;                 // CASE 3
+                        RightRotate(D, w);              // CASE 3
+                        w = x->parent->right;           // CASE 3
+                    }
+                    w->color = x->parent->color;        // CASE 4
+                    x->parent->color = BLACK;           // CASE 4
+                    w->right->color = BLACK;            // CASE 4
+                    LeftRotate(D, x->parent);           // CASE 4
+                    x = D->root;                        // CASE 4
+                }
+            //} else { // this must be taken out
+                //n->color = currNode->parent->color;
+                //currNode->parent->color = BLACK;
+                //n->right->color = BLACK;
+                //RotateLeft(D, currNode->parent);
+                //x = D->root;
+            }
+            
+        } else {
+            // note:
+            // x is not root, x is black
+            // x is not px's left child (so x is px's right child)
+            // set w to be px's left child
+            // case 5: if w is red
+            // case 6: if both w's children are black
+            // case 7: w is black and w's left child is black
+            // case 8: w is black
+            w = x->parent->left;                            // set w to be px's left child
+            if (w->color == RED) {                          // if w is red
+                w->color = BLACK;                           // CASE 5
+                x->parent->color = RED;                     // CASE 5
+                RightRotate(D, x->parent);                  // CASE 5
+                w = x->parent->left;                        // CASE 5
+            }
+            if (w->right == D->NIL || w->left == D->NIL) {  // if w has a nil child (must check this first bc w would not have a left child, therefore we don't color it's left child black!!! which is difference btwn this and the other case 8)
+                w->color = x->parent->color;                // CASE 8 (but w has no children)
+                x->parent->color = BLACK;                   // CASE 8 (but w has no children)
+                RightRotate(D, x->parent);                  // CASE 8 (but w has no children)
+                x = D->root;                                // CASE 8 (but w has no children)
+            } else if (w->right->color == BLACK && w->left->color == BLACK) {   // w's children are both black
+                w->color = RED;                             // CASE 6
+                x = x->parent;                              // CASE 6
+            } else {
+                if (w->left->color == BLACK) {              // if w's left child is black
+                    w->right->color = BLACK;                // CASE 7
+                    w->color = RED;                         // CASE 7
+                    LeftRotate(D, w);                       // CASE 7
+                    w = x->parent->left;                    // CASE 7
+                }
+                w->color = x->parent->color;                // CASE 8
+                x->parent->color = BLACK;                   // CASE 8
+                w->left->color = BLACK;                     // CASE 8
+                RightRotate(D, x->parent);                  // CASE 8
+                x = D->root;                                // CASE 8
+            }
+        }
+        x->color = BLACK;                  // color x black
+    }
+    
+    /* Professor's pseudo-code that my code was modelled after
+    Node x = currNode;
+    Node w;
+    while (x != D->root && x->color == BLACK) {
+        if (x == x->parent->left) {
+            w = x->parent->right;
+            if (w->color == RED) {
+                w->color = BLACK;                       // case 1
+                x->parent->color = RED;                 // case 1
+                LeftRotate(D, x->parent);               // case 1
+                w = x->parent->right;                   // case 1
+            }
+            if (w->left->color == BLACK && w->right->color == BLACK) {
+                w->color = RED;                         // case 2
+                x = x->parent;                          // case 2
+            } else {
+                if (w->right->color == BLACK) {
+                    w->left->color = BLACK;             // case 3
+                    w->color = RED;                     // case 3
+                    RightRotate(D, w);                  // case 3
+                    w = x->parent->right;               // case 3
+                }
+                w->color = x->parent->color;            // case 4
+                x->parent->color = BLACK;               // case 4
+                x->right->color = BLACK;                // case 4
+                LeftRotate(D, x->parent);               // case 4
+                x = D->root;                            // case 4
+            }
+        } else {
+            w = x->parent->left;
+            if (w->color == RED) {
+                w->color = BLACK;                       // case 5
+                w->parent->color = RED;                 // case 5
+                RightRotate(D, x->parent);              // case 5
+                w = x->parent->left;                    // case 5
+            }
+            if (w->right->color == BLACK && w->left->color == BLACK) {
+                w->color = RED;                         // case 6
+                x = x->parent;                          // case 6
+            } else {
+                if (w->left->color == BLACK) {
+                    w->right->color = BLACK;            // case 7
+                    w->color = RED;                     // case 7
+                    LeftRotate(D, w);                   // case 7
+                    w = x->parent->left;                // case 7
+                }
+                w->color = x->parent->color;            // case 8
+                x->parent->color = BLACK;               // case 8
+                w->left->color = BLACK;                 // case 8
+                RightRotate(D, x->parent);              // case 8
+                x = D->root;                            // case 8
+            }
+        }
+    }
+    x->color = BLACK;
+    */
+}
+
 
 // Access functions -----------------------------------------------------------
 
@@ -270,6 +642,9 @@ void insert(Dictionary D, KEY_TYPE k, VAL_TYPE v) {
     nodeToInsert->right = D->NIL;
     nodeToInsert->left = D->NIL;
     D->size++;
+    
+    nodeToInsert->color = RED;  // set newly inserted node to be RED
+    RB_InsertFixUp(D, nodeToInsert);
 }
 
 // Transplant()
@@ -312,8 +687,9 @@ void delete(Dictionary D, KEY_TYPE k) {
         D->currNode = NULL;           // since there are no nodes in D, reset D->currNode to NUL:
         return;
     }
-    
+
     // More than one node in D, find the node to delete
+    // First find the node to be deleted
     Node currNode = D->root;
     while (currNode != D->NIL) {
         if (KEY_CMP(k, currNode->key) > 0) {      // k is larger than currNode's key
@@ -328,37 +704,52 @@ void delete(Dictionary D, KEY_TYPE k) {
     // Reached here, then currNode contains the key k and is node to be deleted
     Node nodeToDelete = currNode;
     
-    // if node to be deleted is the currNode in D, set currNode as NULL
+    // if node to be deleted is D->currNode, set currNode as NULL
     if (nodeToDelete == D->currNode) { // if D->currNode = node to delete, k
         D->currNode = NULL;     // set D->currNode as NULL
     }
-    
+
+    // deleting the nodeToDelete
+    Node y = nodeToDelete;
+    int y_original_color = y->color;
+    Node x;
     
     if (nodeToDelete->left == D->NIL) {                     // nodeToDelete has no left child
+        x = nodeToDelete->right;
         Transplant(D, nodeToDelete, nodeToDelete->right);   // replace nodeToDelete with its right child
     } else if (nodeToDelete->right == D->NIL) {             // nodeToDelete has no right child
+        x = nodeToDelete->left;
         Transplant(D, nodeToDelete, nodeToDelete->left);    // replace nodeToDelete with its left child
     } else {       // node has both its children or none
         Node y = getLeftMostChild(D, nodeToDelete->right);
-        if (y->parent != nodeToDelete) {
-            Transplant(D, y, y->right);     // if y's right is NIL, will replace y with NIL
+        y_original_color = y->color;
+        x = y->right;
+        if (y->parent == nodeToDelete) {
+            x->parent = y;
+        } else {
+            Transplant(D, y, y->right);
             y->right = nodeToDelete->right;
             y->right->parent = y;
         }
         Transplant(D, nodeToDelete, y);
         y->left = nodeToDelete->left;
         y->left->parent = y;
+        y->color = nodeToDelete->color;
+    }
+    
+    // delete all connections made in D->NIL node
+    D->NIL->left = NULL;
+    D->NIL->parent = NULL;
+    D->NIL->right = NULL;
+    
+    if (y_original_color == BLACK) {
+        RB_DeleteFixUp(D, x);
     }
     
     // delete the node
     freeNode(&nodeToDelete);
     nodeToDelete = NULL;
     D->size--;
-    
-    // delete all connections made in D->NIL node
-    D->NIL->left = NULL;
-    D->NIL->parent = NULL;
-    D->NIL->right = NULL;
 }
 
 // makeEmpty()
@@ -508,27 +899,22 @@ VAL_TYPE prev(Dictionary D) {
 // value pair is printed on a single line, with the two items separated by a
 // single space.  The pairs are printed in the order defined by the operator
 // KEY_CMP().
-void printDictionary(FILE* out, Dictionary D) {
+void printDictionary(FILE* out, Dictionary D, const char* ord) {
     if (D == NULL) {
          fprintf(stderr, "Dictionary Error: calling printDictionary() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    
-    // in order tree traversal
-    Node currNode = getLeftMostChild(D, D->root);      // currNode is the smallest, left most node in D
+    // The last node to print for pre and in order is the right most node
     Node largestNode = getRightMostChild(D, D->root);
     
-    while(currNode != D->NIL) {
-        if (currNode == NULL) {
-            break;
-        }
-        // print the current node
-        fprintf(out, KEY_FORMAT, currNode->key);
-        fprintf(out, " ");
-        fprintf(out, VAL_FORMAT, currNode->val);
-        if (currNode != largestNode) {
-            fprintf(out, "\n");
-        }
-        currNode = inOrderSucessor(D, currNode); // get next in order node
+    if (strcmp(ord, "pre") == 0) {          // pre order tree traversal
+        PreOrderTreeWalk(out, D, D->root, largestNode);
+        
+    } else if (strcmp(ord, "in") == 0) {    // in order tree traversal
+        InOrderTreeWalk(out, D, D->root, largestNode);
+        
+    } else if (strcmp(ord, "post") == 0) {  // post order tree traversal
+        // the last node to print is the root
+        PostOrderTreeWalk(out, D, D->root);
     }
 }
