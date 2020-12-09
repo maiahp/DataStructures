@@ -864,6 +864,9 @@ VAL_TYPE next(Dictionary D) {
         return VAL_UNDEF;
     }
     Node next = inOrderSucessor(D, D->currNode); // get the successor
+    if (next == D->NIL) { // if the successor is NIL
+        return VAL_UNDEF; // return val_undef
+    }
     D->currNode = next; // update the currNode to its successor
     return D->currNode->val;
 }
