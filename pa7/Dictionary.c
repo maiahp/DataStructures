@@ -431,12 +431,12 @@ void RB_DeleteFixUp(Dictionary D, Node x) {
                     LeftRotate(D, x->parent);           // CASE 4
                     x = D->root;                        // CASE 4
                 }
-            //} else { // this must be taken out
+            } else { // this must be taken out
                 //n->color = currNode->parent->color;
                 //currNode->parent->color = BLACK;
                 //n->right->color = BLACK;
                 //RotateLeft(D, currNode->parent);
-                //x = D->root;
+                x = D->root;
             }
             
         } else {
