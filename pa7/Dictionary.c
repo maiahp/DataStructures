@@ -122,7 +122,7 @@ Node getLeftMostChild(Dictionary D, Node currNode) {
         return D->NIL;
     }
     
-    while (currNode->left != D->NIL) {  // traverse through all left children
+    while (currNode->left != D->NIL && currNode->left != NULL) {  // traverse through all left children
         currNode = currNode->left;
     }
     return currNode;     // the left most leaf of branch starting at currNode
@@ -136,7 +136,7 @@ Node getRightMostChild(Dictionary D, Node currNode) {
         return D->NIL;
     }
     
-    while (currNode->right != D->NIL) {  // traverse through all right children
+    while (currNode->right != D->NIL && currNode->right != NULL) {  // traverse through all right children
         currNode = currNode->right;
     }
     return currNode;     // the right most leaf of branch starting at currNode

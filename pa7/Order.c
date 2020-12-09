@@ -35,15 +35,16 @@ int main(int argc, const char * argv[]) {
         printf("Unable to open file %s for writing\n", argv[2]);
         exit(1);
     }
+     
     
     /*
     // hardcoding the filename (testing):
-    in = fopen("in1.txt", "r");
+    in = fopen("infile5.txt", "r");
     if(in==NULL) {
         printf("Unable to open file %s for reading\n", "input.txt"); // print error message to stderr
         exit(1);
     }
-    out = fopen("out1.txt", "w");
+    out = fopen("outfile5.txt", "w");
     if(out==NULL) {
         printf("Unable to open file %s for writing\n", "output.txt"); // print error message to stderr
         exit(1);
