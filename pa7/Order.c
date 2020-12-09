@@ -35,7 +35,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     
-    
+    /*
     // hardcoding the filename (testing):
     in = fopen("in3.txt", "r");
     if(in==NULL) {
@@ -48,7 +48,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     // end (testing)
-    
+    */
     
     // grab each line from file and insert key, val into dict
     // line = key
