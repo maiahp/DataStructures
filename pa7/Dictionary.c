@@ -185,14 +185,21 @@ void InOrderTreeWalk(FILE *out, Dictionary D, Node x, Node lastNode) {
 }
 
 // PreOrderTreeWalk()
-void PreOrderTreeWalk(FILE *out, Dictionary D, Node x, Node lastNode) {
+void PreOrderTreeWalk(FILE *out, Dictionary D, Node x, Node firstNode) {
+    // note: not printing newline after last node doesn't work
+    // for some reason last two words get stuck together, so lines not executing in
+    // order, must instead print a newline before all prints, except for the first node
+    
     if (x != D->NIL) {
-        fprintf(out, "%s", x->key);     // print the key
-        if (x != lastNode) {
+        if (x != firstNode) {
             fprintf(out, "\n");
         }
-        PreOrderTreeWalk(out, D, x->left, lastNode);     // recur on left children
-        PreOrderTreeWalk(out, D, x->right, lastNode);    // recur on right children
+        fprintf(out, "%s", x->key);     // print the key
+        //if (x != lastNode) {
+        //    fprintf(out, "\n");
+        //}
+        PreOrderTreeWalk(out, D, x->left, firstNode);     // recur on left children
+        PreOrderTreeWalk(out, D, x->right, firstNode);    // recur on right children
     }
 }
 
@@ -907,11 +914,12 @@ void printDictionary(FILE* out, Dictionary D, const char* ord) {
          fprintf(stderr, "Dictionary Error: calling printDictionary() on NULL Dictionary reference\n");
          exit(EXIT_FAILURE);
      }
-    // The last node to print for pre and in order is the right most node
-    Node largestNode = getRightMostChild(D, D->root);
+    
+    Node largestNode = getRightMostChild(D, D->root); // The last node to print for pre and in order is the right most node
+    Node firstNode = D->root; // the first node to be printed for Pre-Order Tree Walk
     
     if (strcmp(ord, "pre") == 0) {          // pre order tree traversal
-        PreOrderTreeWalk(out, D, D->root, largestNode);
+        PreOrderTreeWalk(out, D, D->root, firstNode);
         
     } else if (strcmp(ord, "in") == 0) {    // in order tree traversal
         InOrderTreeWalk(out, D, D->root, largestNode);
