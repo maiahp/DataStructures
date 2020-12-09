@@ -19,7 +19,7 @@ int main(int argc, const char * argv[]) {
     // check command line for correct number of arguments
     // argv[0] = Lex, argv[1] = in file, argv[2] = out file
     
-    /*
+    
     if ( argc != 3 ) {
         fprintf(stderr, "Usage: %s <input file> <outputfile>\n", argv[0]);
         exit(1);
@@ -35,8 +35,8 @@ int main(int argc, const char * argv[]) {
         printf("Unable to open file %s for writing\n", argv[2]);
         exit(1);
     }
-    */
     
+    /*
     // hardcoding the filename (testing):
     in = fopen("in1.txt", "r");
     if(in==NULL) {
@@ -49,7 +49,7 @@ int main(int argc, const char * argv[]) {
         exit(1);
     }
     // end (testing)
-    
+    */
     
     // grab each line from file and insert key, val into dict
     // line = key
