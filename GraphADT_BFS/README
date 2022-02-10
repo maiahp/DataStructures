@@ -1,18 +1,13 @@
 Maiah Pardo
-mapardo
-ID # 1815393
-CSE 101
-PA4
 
 
 Included files:
 
 
+FindPath.c -  written by me. The top-level client for the Graph ADT.
 
-FindComponents.c -  written by me. The top-level client for the Graph ADT.
 
-
-Graph.c - written by me. The Graph ADT and its associated algorithms can perform Depth First Search (DFS) and can Transpose a Graph.
+Graph.c - written by me. The Graph ADT and its associated algorithms can perform Breadth First Search (BFS) from a given a source vertex, and find the shortest path between two vertices in a Graph.
 
 
 Graph.h - provided by the Professor. A header file for the Graph ADT which contains the exported Graph operations.
@@ -27,7 +22,7 @@ List.h  -  provided by the Professor. A header file for the List ADT which conta
 GraphTest.c - written by me. A test file for the Graph ADT.
 
 
-README  -  written by me. A description of each file submitted.
+README  -  written by me. A description of each file submitted for pa3.
 
 
 Makefile  -  provided by the Professor. Compiles the source code.
@@ -35,7 +30,6 @@ Makefile  -  provided by the Professor. Compiles the source code.
 
 
 Note to grader: 
-The Graph ADT methods DFS() and Visit() algorithms were modeled from the Professor's example code.
-FindComponents and Graph executes without memory leaks.
+The Graph ADT methods getPath() and BFS() algorithms were modeled from the Professor's example code.
+FindPath and Graph executes without memory leaks.
 All public exported methods of the Graph ADT (all methods found in the Graph.h file) are tested in GraphTest.c. 
-

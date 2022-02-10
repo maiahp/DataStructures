@@ -1,12 +1,7 @@
 Maiah Pardo
-mapardo
-ID # 1815393
-CSE 101
-PA7
 
 
 Included files:
-
 
 
 Order.c  -  written by me. The client module for pa7, which reads lines from the input file, stores the lines in an array and uses the Dictionary ADT to print out the lines in pre-order, in-order, and post-order tree traversal.
